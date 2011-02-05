@@ -514,10 +514,9 @@ static int jz4740_gpio_chip_init(struct jz_gpio_chip *chip, unsigned int id)
 	irq_set_chained_handler(chip->irq, jz_gpio_irq_demux_handler);
 
 	for (irq = chip->irq_base; irq < chip->irq_base + chip->gpio_chip.ngpio; ++irq) {
-		irq_set_lockdep_class(irq, &gpio_lock_class);
-		irq_set_chip_data(irq, chip);
-		irq_set_chip_and_handler(irq, &jz_gpio_irq_chip,
-					 handle_level_irq);
+		lockdep_set_class(&irq_desc[irq].lock, &gpio_lock_class);
+		set_irq_chip_data(irq, chip);
+		set_irq_chip_and_handler(irq, &jz_gpio_irq_chip, handle_level_irq);
 	}
 
 	return 0;
