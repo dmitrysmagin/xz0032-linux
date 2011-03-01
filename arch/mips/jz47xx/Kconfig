@@ -1,0 +1,24 @@
+
+choice
+	prompt "SoC type"
+	depends on MACH_JZ47XX
+	default MACH_JZ4740
+
+config MACH_JZ4740
+	bool "JZ4740"
+	select JZ4740_TIMER_CSRC
+	select JZ4740_GPIOV2
+
+
+endchoice
+
+source "arch/mips/jz47xx/jz4740/Kconfig"
+
+config HAVE_PWM
+	bool
+
+config JZ4740_TIMER_CSRC
+	bool
+
+config JZ4740_GPIOV2
+	bool
