@@ -28,7 +28,9 @@
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
 
-#include <asm/mach-jz4740/base.h>
+#include <jz4740/base.h>
+#include <jz4740/irq.h>
+#include <jz4740/gpio.h>
 
 #define JZ4740_GPIO_BASE_A (32*0)
 #define JZ4740_GPIO_BASE_B (32*1)
@@ -40,10 +42,10 @@
 #define JZ4740_GPIO_NUM_C 31
 #define JZ4740_GPIO_NUM_D 32
 
-#define JZ4740_IRQ_GPIO_BASE_A (JZ4740_IRQ_GPIO(0) + JZ4740_GPIO_BASE_A)
-#define JZ4740_IRQ_GPIO_BASE_B (JZ4740_IRQ_GPIO(0) + JZ4740_GPIO_BASE_B)
-#define JZ4740_IRQ_GPIO_BASE_C (JZ4740_IRQ_GPIO(0) + JZ4740_GPIO_BASE_C)
-#define JZ4740_IRQ_GPIO_BASE_D (JZ4740_IRQ_GPIO(0) + JZ4740_GPIO_BASE_D)
+#define JZ4740_IRQ_GPIO_BASE_A (JZ47XX_IRQ_GPIO(0) + JZ4740_GPIO_BASE_A)
+#define JZ4740_IRQ_GPIO_BASE_B (JZ47XX_IRQ_GPIO(0) + JZ4740_GPIO_BASE_B)
+#define JZ4740_IRQ_GPIO_BASE_C (JZ47XX_IRQ_GPIO(0) + JZ4740_GPIO_BASE_C)
+#define JZ4740_IRQ_GPIO_BASE_D (JZ47XX_IRQ_GPIO(0) + JZ4740_GPIO_BASE_D)
 
 #define JZ_REG_GPIO_PIN			0x00
 #define JZ_REG_GPIO_DATA		0x10
@@ -269,13 +271,13 @@ EXPORT_SYMBOL(jz_gpio_port_get_value);
 
 int gpio_to_irq(unsigned gpio)
 {
-	return JZ4740_IRQ_GPIO(0) + gpio;
+	return JZ47XX_IRQ_GPIO(0) + gpio;
 }
 EXPORT_SYMBOL_GPL(gpio_to_irq);
 
 int irq_to_gpio(unsigned irq)
 {
-	return irq - JZ4740_IRQ_GPIO(0);
+	return irq - JZ47XX_IRQ_GPIO(0);
 }
 EXPORT_SYMBOL_GPL(irq_to_gpio);
 
@@ -308,7 +310,7 @@ static void jz_gpio_irq_demux_handler(unsigned int irq, struct irq_desc *desc)
 	unsigned int gpio_bank;
 	struct jz_gpio_chip *chip = irq_desc_get_handler_data(desc);
 
-	gpio_bank = JZ4740_IRQ_GPIO0 - irq;
+	gpio_bank = JZ47XX_IRQ_GPIO(0) - irq;
 
 	flag = readl(chip->base + JZ_REG_GPIO_FLAG);
 
@@ -319,7 +321,7 @@ static void jz_gpio_irq_demux_handler(unsigned int irq, struct irq_desc *desc)
 
 	jz_gpio_check_trigger_both(chip, irq);
 
-	gpio_irq += (gpio_bank << 5) + JZ4740_IRQ_GPIO(0);
+	gpio_irq += (gpio_bank << 5) + JZ47XX_IRQ_GPIO(0);
 
 	generic_handle_irq(gpio_irq);
 };
@@ -509,9 +511,9 @@ static int jz4740_gpio_chip_init(struct jz_gpio_chip *chip, unsigned int id)
 
 	gpiochip_add(&chip->gpio_chip);
 
-	chip->irq = JZ4740_IRQ_INTC_GPIO(id);
-	irq_set_handler_data(chip->irq, chip);
-	irq_set_chained_handler(chip->irq, jz_gpio_irq_demux_handler);
+	chip->irq = JZ47XX_IRQ_INTC_GPIO(id);
+	set_irq_data(chip->irq, chip);
+	set_irq_chained_handler(chip->irq, jz_gpio_irq_demux_handler);
 
 	for (irq = chip->irq_base; irq < chip->irq_base + chip->gpio_chip.ngpio; ++irq) {
 		lockdep_set_class(&irq_desc[irq].lock, &gpio_lock_class);

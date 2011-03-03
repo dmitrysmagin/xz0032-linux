@@ -19,7 +19,7 @@
 
 #include "timer.h"
 
-#include <asm/mach-jz4740/base.h>
+#include <jz4740/base.h>
 
 void __iomem *jz4740_timer_base;
 

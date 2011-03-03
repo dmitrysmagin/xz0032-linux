@@ -29,7 +29,7 @@
 #include <asm/mipsregs.h>
 #include <asm/irq_cpu.h>
 
-#include <asm/mach-jz4740/base.h>
+#include <jz4740/base.h>
 
 static void __iomem *jz_intc_base;
 static uint32_t jz_intc_wakeup;
@@ -41,7 +41,7 @@ static uint32_t jz_intc_saved;
 #define JZ_REG_INTC_CLEAR_MASK	0x0c
 #define JZ_REG_INTC_PENDING	0x10
 
-#define IRQ_BIT(x) BIT((x) - JZ4740_IRQ_BASE)
+#define IRQ_BIT(x) BIT((x) - JZ47XX_IRQ_BASE)
 
 static inline unsigned long intc_irq_bit(struct irq_data *data)
 {
@@ -83,7 +83,7 @@ static irqreturn_t jz4740_cascade(int irq, void *data)
 	irq_reg = readl(jz_intc_base + JZ_REG_INTC_PENDING);
 
 	if (irq_reg)
-		generic_handle_irq(__fls(irq_reg) + JZ4740_IRQ_BASE);
+		generic_handle_irq(__fls(irq_reg) + JZ47XX_IRQ_BASE);
 
 	return IRQ_HANDLED;
 }
@@ -103,9 +103,9 @@ void __init arch_init_irq(void)
 	/* Mask all irqs */
 	writel(0xffffffff, jz_intc_base + JZ_REG_INTC_SET_MASK);
 
-	for (i = JZ4740_IRQ_BASE; i < JZ4740_IRQ_BASE + 32; i++) {
-		irq_set_chip_data(i, (void *)IRQ_BIT(i));
-		irq_set_chip_and_handler(i, &intc_irq_type, handle_level_irq);
+	for (i = JZ47XX_IRQ_BASE; i < JZ47XX_IRQ_BASE + 32; i++) {
+		set_irq_chip_data(i, (void *)IRQ_BIT(i));
+		set_irq_chip_and_handler(i, &intc_irq_type, handle_level_irq);
 	}
 
 	setup_irq(2, &jz4740_cascade_action);

@@ -20,7 +20,7 @@
 #include <linux/pwm.h>
 #include <linux/gpio.h>
 
-#include <asm/mach-jz4740/gpio.h>
+#include <jz4740/gpio.h>
 #include "timer.h"
 
 static struct clk *jz4740_pwm_clk;
