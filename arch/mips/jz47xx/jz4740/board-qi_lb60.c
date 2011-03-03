@@ -36,7 +36,7 @@
 
 #include <asm/mach-jz4740/platform.h>
 
-#include "clock.h"
+#include "../clock.h"
 
 static bool is_avt2;
 

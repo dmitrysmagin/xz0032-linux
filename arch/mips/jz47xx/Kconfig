@@ -6,8 +6,8 @@ choice
 
 config MACH_JZ4740
 	bool "JZ4740"
-	select JZ4740_TIMER_CSRC
-	select JZ4740_GPIOV2
+	select JZ47XX_TIMER_CSRC
+	select JZ47XX_GPIOV2
 
 
 endchoice
@@ -17,8 +17,8 @@ source "arch/mips/jz47xx/jz4740/Kconfig"
 config HAVE_PWM
 	bool
 
-config JZ4740_TIMER_CSRC
+config JZ47XX_TIMER_CSRC
 	bool
 
-config JZ4740_GPIOV2
+config JZ47XX_GPIOV2
 	bool

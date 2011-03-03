@@ -33,7 +33,7 @@
 #include <asm/mach-jz4740/board-n516.h>
 #include <asm/mach-jz4740/platform.h>
 
-#include "clock.h"
+#include "../clock.h"
 
 static long n516_panic_blink(int state)
 {

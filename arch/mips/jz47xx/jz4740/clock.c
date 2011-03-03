@@ -25,7 +25,7 @@
 #include <asm/mach-jz4740/clock.h>
 #include <asm/mach-jz4740/base.h>
 
-#include "clock.h"
+#include "../clock.h"
 
 #define JZ_REG_CLOCK_CTRL	0x00
 #define JZ_REG_CLOCK_LOW_POWER	0x04

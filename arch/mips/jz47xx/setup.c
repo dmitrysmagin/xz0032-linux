@@ -25,5 +25,7 @@ void __init plat_mem_setup(void)
 
 const char *get_system_type(void)
 {
+#ifdef CONFIG_MACH_JZ4740
 	return "JZ4740";
+#endif
 }
