@@ -3,7 +3,7 @@
 
 static inline bool soc_is_jz4740(void)
 {
-#ifdef MACH_JZ4740
+#ifdef CONFIG_MACH_JZ4740
 	return true;
 #else
 	return false;

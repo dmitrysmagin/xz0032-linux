@@ -28,7 +28,7 @@
 
 #include <linux/i2c.h>
 
-#include "clock.h"
+#include "../clock.h"
 
 #include <asm/mach-jz4740/jz4740_mmc.h>
 #include <asm/mach-jz4740/jz4740_nand.h>
