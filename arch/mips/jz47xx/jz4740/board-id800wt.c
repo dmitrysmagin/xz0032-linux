@@ -16,7 +16,7 @@
 #include <linux/power_supply.h>
 #include <linux/pwm_backlight.h>
 
-#include "clock.h"
+#include "../clock.h"
 
 #include <asm/mach-jz4740/jz4740_fb.h>
 #include <asm/mach-jz4740/jz4740_nand.h>
