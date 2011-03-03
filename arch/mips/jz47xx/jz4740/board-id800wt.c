@@ -10,7 +10,7 @@
 #include <linux/init.h>
 #include <linux/gpio.h>
 
-#include <asm/mach-jz4740/platform.h>
+#include <jz4740/platform.h>
 
 #include <linux/input.h>
 #include <linux/power_supply.h>
@@ -18,8 +18,8 @@
 
 #include "../clock.h"
 
-#include <asm/mach-jz4740/jz4740_fb.h>
-#include <asm/mach-jz4740/jz4740_nand.h>
+#include <jz4740_fb.h>
+#include <jz4740_nand.h>
 
 /* NAND */
 static struct nand_ecclayout id800wt_ecclayout = {

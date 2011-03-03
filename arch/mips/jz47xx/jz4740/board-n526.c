@@ -30,11 +30,11 @@
 
 #include "../clock.h"
 
-#include <asm/mach-jz4740/jz4740_mmc.h>
-#include <asm/mach-jz4740/jz4740_nand.h>
-#include <asm/mach-jz4740/jz4740_fb.h>
+#include <jz4740/jz4740_mmc.h>
+#include <jz4740/jz4740_nand.h>
+#include <jz4740/jz4740_fb.h>
 
-#include <asm/mach-jz4740/platform.h>
+#include <jz4740/platform.h>
 
 /* NAND */
 static struct nand_ecclayout n526_ecclayout = {

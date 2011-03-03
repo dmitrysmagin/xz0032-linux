@@ -21,7 +21,7 @@
 #include <linux/debugfs.h>
 #include <linux/uaccess.h>
 
-#include <asm/mach-jz4740/clock.h>
+#include <jz4740/clock.h>
 #include "clock.h"
 
 static struct dentry *jz4740_clock_debugfs;

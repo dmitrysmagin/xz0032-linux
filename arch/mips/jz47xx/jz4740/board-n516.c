@@ -27,11 +27,11 @@
 
 #include <linux/i2c.h>
 
-#include <asm/mach-jz4740/jz4740_mmc.h>
-#include <asm/mach-jz4740/jz4740_nand.h>
+#include <jz4740/jz4740_mmc.h>
+#include <jz4740/jz4740_nand.h>
 
-#include <asm/mach-jz4740/board-n516.h>
-#include <asm/mach-jz4740/platform.h>
+#include <jz4740/board-n516.h>
+#include <jz4740/platform.h>
 
 #include "../clock.h"
 
