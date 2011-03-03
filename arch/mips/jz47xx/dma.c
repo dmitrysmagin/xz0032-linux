@@ -19,8 +19,10 @@
 #include <linux/interrupt.h>
 
 #include <linux/dma-mapping.h>
-#include <asm/mach-jz4740/dma.h>
-#include <asm/mach-jz4740/base.h>
+
+#include <jz4740/dma.h>
+#include <jz4740/base.h>
+#include <jz4740/irq.h>
 
 #define JZ_REG_DMA_SRC_ADDR(x)		(0x00 + (x) * 0x20)
 #define JZ_REG_DMA_DST_ADDR(x)		(0x04 + (x) * 0x20)

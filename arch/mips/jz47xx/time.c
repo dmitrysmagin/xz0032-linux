@@ -19,7 +19,7 @@
 
 #include <linux/clockchips.h>
 
-#include <asm/mach-jz4740/irq.h>
+#include <jz4740/irq.h>
 #include <asm/time.h>
 
 #include "clock.h"

@@ -20,10 +20,10 @@
 #include <linux/irq.h>
 #include <linux/gpio.h>
 
-#include <asm/mach-jz4740/jz4740_fb.h>
+#include <jz4740/jz4740_fb.h>
 
-#include <asm/mach-jz4740/platform.h>
-#include <asm/mach-jz4740/board-n516.h>
+#include <jz4740/platform.h>
+#include <jz4740/board-n516.h>
 
 #include <video/metronomefb.h>
 #include <linux/console.h>

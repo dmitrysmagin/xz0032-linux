@@ -18,8 +18,8 @@
 
 #include <asm/reboot.h>
 
-#include <asm/mach-jz4740/base.h>
-#include <asm/mach-jz4740/timer.h>
+#include <jz4740/base.h>
+#include <jz4740/timer.h>
 
 static void jz4740_halt(void)
 {

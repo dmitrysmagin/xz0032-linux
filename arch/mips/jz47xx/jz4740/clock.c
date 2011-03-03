@@ -22,8 +22,8 @@
 #include <linux/list.h>
 #include <linux/err.h>
 
-#include <asm/mach-jz4740/clock.h>
-#include <asm/mach-jz4740/base.h>
+#include <jz4740/clock.h>
+#include <jz4740/base.h>
 
 #include "../clock.h"
 

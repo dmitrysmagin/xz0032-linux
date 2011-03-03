@@ -21,9 +21,9 @@
 
 #include <linux/dma-mapping.h>
 
-#include <asm/mach-jz4740/platform.h>
-#include <asm/mach-jz4740/base.h>
-#include <asm/mach-jz4740/irq.h>
+#include <jz4740/platform.h>
+#include <jz4740/base.h>
+#include <jz4740/irq.h>
 
 #include <linux/serial_core.h>
 #include <linux/serial_8250.h>
