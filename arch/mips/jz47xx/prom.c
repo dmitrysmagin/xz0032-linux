@@ -21,7 +21,7 @@
 #include <linux/serial_reg.h>
 
 #include <asm/bootinfo.h>
-#include <jz4740/base.h>
+#include <asm/mach-jz47xx/base.h>
 
 static __init void jz4740_init_cmdline(int argc, char *argv[])
 {
@@ -54,7 +54,7 @@ void __init prom_free_prom_memory(void)
 {
 }
 
-#define UART_REG(_reg) ((void __iomem *)CKSEG1ADDR(JZ4740_UART0_BASE_ADDR + (_reg << 2)))
+#define UART_REG(_reg) ((void __iomem *)CKSEG1ADDR(JZ47XX_UART0_BASE_ADDR + (_reg << 2)))
 
 void prom_putchar(char c)
 {

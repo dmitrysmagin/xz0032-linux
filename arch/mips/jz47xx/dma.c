@@ -21,8 +21,9 @@
 #include <linux/dma-mapping.h>
 
 #include <jz4740/dma.h>
-#include <jz4740/base.h>
 #include <jz4740/irq.h>
+
+#include <asm/mach-jz47xx/base.h>
 
 #define JZ_REG_DMA_SRC_ADDR(x)		(0x00 + (x) * 0x20)
 #define JZ_REG_DMA_DST_ADDR(x)		(0x04 + (x) * 0x20)
@@ -272,7 +273,7 @@ static int jz4740_dma_init(void)
 {
 	unsigned int ret;
 
-	jz4740_dma_base = ioremap(JZ4740_DMAC_BASE_ADDR, 0x400);
+	jz4740_dma_base = ioremap(JZ47XX_DMAC_BASE_ADDR, 0x400);
 
 	if (!jz4740_dma_base)
 		return -EBUSY;

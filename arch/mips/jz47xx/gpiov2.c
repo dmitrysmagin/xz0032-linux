@@ -28,7 +28,7 @@
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
 
-#include <asm/mach-jz47xx/jz4740/base.h>
+#include <asm/mach-jz47xx/base.h>
 #include <asm/mach-jz47xx/gpio.h>
 
 #define JZ_REG_GPIO_PIN			0x00
@@ -456,7 +456,7 @@ static int __init jz47xx_gpio_chip_init(struct jz_gpio_chip *chip, unsigned int 
 
 	spin_lock_init(&chip->lock);
 
-	chip->base = ioremap(JZ4740_GPIO_BASE_ADDR + (id * 0x100), 0x100);
+	chip->base = ioremap(JZ47XX_GPIO_BASE_ADDR + (id * 0x100), 0x100);
 	chip->gpio_chip.base = 32 * id;
 
 	chip->gpio_chip.set = jz_gpio_set_value;

@@ -19,7 +19,7 @@
 
 #include "timer.h"
 
-#include <jz4740/base.h>
+#include <asm/mach-jz47xx/base.h>
 
 void __iomem *jz4740_timer_base;
 
@@ -37,7 +37,7 @@ EXPORT_SYMBOL_GPL(jz4740_timer_disable_watchdog);
 
 void __init jz4740_timer_init(void)
 {
-	jz4740_timer_base = ioremap(JZ4740_TCU_BASE_ADDR, 0x100);
+	jz4740_timer_base = ioremap(JZ47XX_TCU_BASE_ADDR, 0xd0);
 
 	if (!jz4740_timer_base)
 		panic("Failed to ioremap timer registers");

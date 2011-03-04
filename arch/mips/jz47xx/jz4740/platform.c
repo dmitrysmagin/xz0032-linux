@@ -22,8 +22,9 @@
 #include <linux/dma-mapping.h>
 
 #include <jz4740/platform.h>
-#include <jz4740/base.h>
 #include <jz4740/irq.h>
+
+#include <asm/mach-jz47xx/base.h>
 
 #include <linux/serial_core.h>
 #include <linux/serial_8250.h>
@@ -34,8 +35,8 @@
 /* OHCI controller */
 static struct resource jz4740_usb_ohci_resources[] = {
 	{
-		.start	= JZ4740_UHC_BASE_ADDR,
-		.end	= JZ4740_UHC_BASE_ADDR + 0x1000 - 1,
+		.start	= JZ47XX_UHC_BASE_ADDR,
+		.end	= JZ47XX_UHC_BASE_ADDR + 0x1000 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	{
@@ -59,8 +60,8 @@ struct platform_device jz4740_usb_ohci_device = {
 /* UDC (USB gadget controller) */
 static struct resource jz4740_usb_gdt_resources[] = {
 	{
-		.start	= JZ4740_UDC_BASE_ADDR,
-		.end	= JZ4740_UDC_BASE_ADDR + 0x1000 - 1,
+		.start	= JZ47XX_UDC_BASE_ADDR,
+		.end	= JZ47XX_UDC_BASE_ADDR + 0x1000 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	{
@@ -84,8 +85,8 @@ struct platform_device jz4740_udc_device = {
 /* MMC/SD controller */
 static struct resource jz4740_mmc_resources[] = {
 	{
-		.start	= JZ4740_MSC_BASE_ADDR,
-		.end	= JZ4740_MSC_BASE_ADDR + 0x1000 - 1,
+		.start	= JZ47XX_MSC_BASE_ADDR,
+		.end	= JZ47XX_MSC_BASE_ADDR + 0x1000 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	{
@@ -109,8 +110,8 @@ struct platform_device jz4740_mmc_device = {
 /* RTC controller */
 static struct resource jz4740_rtc_resources[] = {
 	{
-		.start	= JZ4740_RTC_BASE_ADDR,
-		.end	= JZ4740_RTC_BASE_ADDR + 0x38 - 1,
+		.start	= JZ47XX_RTC_BASE_ADDR,
+		.end	= JZ47XX_RTC_BASE_ADDR + 0x38 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	{
@@ -130,8 +131,8 @@ struct platform_device jz4740_rtc_device = {
 /* I2C controller */
 static struct resource jz4740_i2c_resources[] = {
 	{
-		.start	= JZ4740_I2C_BASE_ADDR,
-		.end	= JZ4740_I2C_BASE_ADDR + 0x1000 - 1,
+		.start	= JZ47XX_I2C_BASE_ADDR,
+		.end	= JZ47XX_I2C_BASE_ADDR + 0x1000 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	{
@@ -152,8 +153,8 @@ struct platform_device jz4740_i2c_device = {
 static struct resource jz4740_nand_resources[] = {
 	{
 		.name	= "mmio",
-		.start	= JZ4740_EMC_BASE_ADDR,
-		.end	= JZ4740_EMC_BASE_ADDR + 0x1000 - 1,
+		.start	= JZ47XX_EMC_BASE_ADDR,
+		.end	= JZ47XX_EMC_BASE_ADDR + 0x1000 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	{
@@ -173,8 +174,8 @@ struct platform_device jz4740_nand_device = {
 /* LCD controller */
 static struct resource jz4740_framebuffer_resources[] = {
 	{
-		.start	= JZ4740_LCD_BASE_ADDR,
-		.end	= JZ4740_LCD_BASE_ADDR + 0x1000 - 1,
+		.start	= JZ47XX_LCD_BASE_ADDR,
+		.end	= JZ47XX_LCD_BASE_ADDR + 0x1000 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 };
@@ -193,8 +194,8 @@ struct platform_device jz4740_framebuffer_device = {
 /* I2S controller */
 static struct resource jz4740_i2s_resources[] = {
 	{
-		.start	= JZ4740_AIC_BASE_ADDR,
-		.end	= JZ4740_AIC_BASE_ADDR + 0x38 - 1,
+		.start	= JZ47XX_AIC_BASE_ADDR,
+		.end	= JZ47XX_AIC_BASE_ADDR + 0x38 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 };
@@ -215,8 +216,8 @@ struct platform_device jz4740_pcm_device = {
 /* Codec */
 static struct resource jz4740_codec_resources[] = {
 	{
-		.start	= JZ4740_AIC_BASE_ADDR + 0x80,
-		.end	= JZ4740_AIC_BASE_ADDR + 0x88 - 1,
+		.start	= JZ47XX_AIC_BASE_ADDR + 0x80,
+		.end	= JZ47XX_AIC_BASE_ADDR + 0x88 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 };
@@ -231,8 +232,8 @@ struct platform_device jz4740_codec_device = {
 /* ADC controller */
 static struct resource jz4740_adc_resources[] = {
 	{
-		.start	= JZ4740_SADC_BASE_ADDR,
-		.end	= JZ4740_SADC_BASE_ADDR + 0x30,
+		.start	= JZ47XX_SADC_BASE_ADDR,
+		.end	= JZ47XX_SADC_BASE_ADDR + 0x30,
 		.flags	= IORESOURCE_MEM,
 	},
 	{
@@ -262,7 +263,7 @@ struct platform_device jz4740_adc_device = {
 		.regshift = 2, \
 		.serial_out = jz4740_serial_out, \
 		.type = PORT_16550, \
-		.mapbase = JZ4740_UART ## _id ## _BASE_ADDR, \
+		.mapbase = JZ47XX_UART ## _id ## _BASE_ADDR, \
 		.irq = JZ4740_IRQ_UART ## _id, \
 	}
 
