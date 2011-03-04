@@ -30,8 +30,13 @@ __asm__(
 	"	ei							\n"
 #else
 	"	mfc0	$1,$12						\n"
+#if defined(CONFIG_MACH_JZ4750)
+	"	ori	$1,0x19						\n"
+	"	xori	$1,0x18						\n"
+#else
 	"	ori	$1,0x1f						\n"
 	"	xori	$1,0x1e						\n"
+#endif
 	"	mtc0	$1,$12						\n"
 #endif
 	"	irq_enable_hazard					\n"
@@ -88,8 +93,13 @@ __asm__(
 	"	di							\n"
 #else
 	"	mfc0	$1,$12						\n"
+#if defined(CONFIG_MACH_JZ4750)
+	"	ori	$1,0x19						\n"
+	"	xori	$1,0x19						\n"
+#else
 	"	ori	$1,0x1f						\n"
 	"	xori	$1,0x1f						\n"
+#endif
 	"	.set	noreorder					\n"
 	"	mtc0	$1,$12						\n"
 #endif
@@ -141,8 +151,13 @@ __asm__(
 	"	andi	\\result, 1					\n"
 #else
 	"	mfc0	\\result, $12					\n"
+#if defined(CONFIG_MACH_JZ4750)
+	"	ori	$1, \\result, 0x19				\n"
+	"	xori	$1, 0x19					\n"
+#else
 	"	ori	$1, \\result, 0x1f				\n"
 	"	xori	$1, 0x1f					\n"
+#endif
 	"	.set	noreorder					\n"
 	"	mtc0	$1, $12						\n"
 #endif
@@ -191,8 +206,13 @@ __asm__(
 #else
 	"	mfc0	$1, $12						\n"
 	"	andi	\\flags, 1					\n"
+#if defined(CONFIG_MACH_JZ4750)
+	"	ori	$1, 0x19					\n"
+	"	xori	$1, 0x19					\n"
+#else
 	"	ori	$1, 0x1f					\n"
 	"	xori	$1, 0x1f					\n"
+#endif
 	"	or	\\flags, $1					\n"
 	"	mtc0	\\flags, $12					\n"
 #endif
