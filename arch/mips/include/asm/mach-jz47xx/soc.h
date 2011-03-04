@@ -10,6 +10,15 @@ static inline bool soc_is_jz4740(void)
 #endif
 }
 
+static inline bool soc_is_jz4750(void)
+{
+#ifdef CONFIG_MACH_JZ4750
+	return true;
+#else
+	return false;
+#endif
+}
+
 static inline bool soc_is_jz4760(void)
 {
 #ifdef CONFIG_MACH_JZ4760

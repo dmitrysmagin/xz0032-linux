@@ -1,0 +1,13 @@
+if MACH_JZ4750
+
+choice
+	prompt "Machine type"
+	depends on MACH_JZ4750
+	default JZ4750_XZ0032
+
+config JZ4750_XZ0032
+	bool "XZ0032 board"
+
+endchoice
+
+endif

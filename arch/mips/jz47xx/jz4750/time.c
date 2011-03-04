@@ -1,6 +1,6 @@
 /*
- *  Copyright (C) 2009-2010, Lars-Peter Clausen <lars@metafoo.de>
- *  JZ4740 setup code
+ *  Copyright (C) 2011 Peter Zotov <whitequark@whitequark.org>
+ *  JZ4750 timer setup
  *
  *  This program is free software; you can redistribute it and/or modify it
  *  under  the terms of the GNU General  Public License as published by the
@@ -13,26 +13,14 @@
  *
  */
 
-#include <linux/init.h>
-#include <linux/kernel.h>
+#include <asm/time.h>
+#include <asm/mach-jz47xx/jz4750/irq.h>
 
-#include <asm/mach-jz47xx/soc.h>
+#include "../timer.h"
+#include "../timer-cevt.h"
 
-#include "reset.h"
-
-void __init plat_mem_setup(void)
+void __init plat_time_init(void)
 {
-	jz4740_reset_init();
-}
-
-const char *get_system_type(void)
-{
-	if (soc_is_jz4740())
-		return "JZ4740";
-	else if(soc_is_jz4750())
-		return "JZ4750";
-	else if(soc_is_jz4760())
-		return "JZ4760";
-	else
-		return "unknown";
+	jz4740_timer_init();
+	jz47xx_timer_cevt_init(JZ4750_IRQ_TCU1, 0);
 }
