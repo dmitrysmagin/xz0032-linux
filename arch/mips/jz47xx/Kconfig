@@ -12,14 +12,12 @@ config MACH_JZ4740
 
 config MACH_JZ4750
 	bool "JZ4750"
-	select JZ47XX_TIMER_CSRC
-	select JZ47XX_TIMER_CEVT
+	select JZ47XX_OST
 	select JZ47XX_GPIOV2
 
 config MACH_JZ4760
 	bool "JZ4760"
-	select JZ47XX_TIMER_CSRC
-	select JZ47XX_TIMER_CEVT
+	select JZ47XX_OST
 	select JZ47XX_GPIOV2
 
 endchoice
@@ -35,6 +33,9 @@ config JZ47XX_TIMER_CSRC
 	bool
 
 config JZ47XX_TIMER_CEVT
+	bool
+
+config JZ47XX_OST
 	bool
 
 config JZ47XX_GPIOV2
