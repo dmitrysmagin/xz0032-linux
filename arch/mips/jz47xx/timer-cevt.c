@@ -90,7 +90,7 @@ static struct irqaction timer_irqaction = {
 
 void __init jz47xx_timer_cevt_init(unsigned int irq, unsigned int timer_id)
 {
-	uint32_t clk_rate;
+	unsigned int clk_rate;
 
 	jz47xx_timer_clockevent = timer_id;
 
@@ -107,6 +107,8 @@ void __init jz47xx_timer_cevt_init(unsigned int irq, unsigned int timer_id)
 	clockevents_register_device(&jz47xx_clockevent);
 
 	setup_irq(irq, &timer_irqaction);
+
+	jz4740_timer_start(jz47xx_timer_clockevent);
 
 	jz4740_timer_set_ctrl(jz47xx_timer_clockevent,
 		JZ_TIMER_CTRL_PRESCALE_16 | JZ_TIMER_CTRL_SRC_EXT);
