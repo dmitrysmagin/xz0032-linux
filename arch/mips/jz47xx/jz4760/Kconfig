@@ -1,0 +1,9 @@
+choice
+	prompt "Machine type"
+	depends on MACH_JZ4760
+	default JZ4760_LEPUS
+
+config JZ4760_LEPUS
+	bool "Ingenic JZ4760 Lepus devboard"
+
+endchoice
