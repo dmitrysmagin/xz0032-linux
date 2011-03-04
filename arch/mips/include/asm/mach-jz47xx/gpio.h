@@ -17,6 +17,8 @@
 #define __ASM_MACH_JZ47XX_GPIO_H__
 
 #include <linux/types.h>
+#include <linux/spinlock.h>
+#include <linux/sysdev.h>
 
 enum jz_gpio_function {
     JZ_GPIO_FUNC_NONE,
@@ -79,5 +81,34 @@ uint32_t jz_gpio_port_get_value(int port, uint32_t mask);
 #define JZ_GPIO_PORTB(x) ((x) + 32 * 1)
 #define JZ_GPIO_PORTC(x) ((x) + 32 * 2)
 #define JZ_GPIO_PORTD(x) ((x) + 32 * 3)
+
+struct jz_gpio_chip {
+	unsigned int id;
+
+	unsigned int irq;
+
+	uint32_t wakeup;
+	uint32_t suspend_mask;
+	uint32_t edge_trigger_both;
+
+	void __iomem *base;
+
+	spinlock_t lock;
+
+	struct gpio_chip gpio_chip;
+	struct sys_device sysdev;
+};
+
+#define JZ47XX_GPIO_CHIP(_bank, _ngpio, _irq) { \
+	.irq = _irq, \
+	.gpio_chip = { \
+		.label = "Bank " _bank, \
+		.owner = THIS_MODULE, \
+		.ngpio = _ngpio, \
+	}, \
+}
+
+int __init jz47xx_gpio_init(struct jz_gpio_chip *chips, size_t num,
+	unsigned int irq_base);
 
 #endif
