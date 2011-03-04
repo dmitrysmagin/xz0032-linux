@@ -31,9 +31,10 @@
 
 #include <jz4740/base.h>
 
+static unsigned int jz_intc_num_banks;
 static void __iomem *jz_intc_base;
-static uint32_t jz_intc_wakeup;
-static uint32_t jz_intc_saved;
+static uint32_t jz_intc_wakeup[2];
+static uint32_t jz_intc_saved[2];
 
 #define JZ_REG_INTC_STATUS	0x00
 #define JZ_REG_INTC_MASK	0x04
@@ -41,29 +42,33 @@ static uint32_t jz_intc_saved;
 #define JZ_REG_INTC_CLEAR_MASK	0x0c
 #define JZ_REG_INTC_PENDING	0x10
 
-#define IRQ_BIT(x) BIT((x) - JZ47XX_IRQ_BASE)
+#define IRQ_BIT(x) BIT(((x) - JZ47XX_IRQ_BASE) & 0x1f)
 
-static inline unsigned long intc_irq_bit(struct irq_data *data)
+static inline unsigned int intc_irq_bit(struct irq_data *data)
 {
-	return (unsigned long)irq_data_get_irq_chip_data(data);
+	return (unsigned int)irq_data_get_irq_chip_data(data);
 }
 
 static void intc_irq_unmask(struct irq_data *data)
 {
-	writel(intc_irq_bit(data), jz_intc_base + JZ_REG_INTC_CLEAR_MASK);
+	unsigned int offset = (data->irq - JZ47XX_IRQ_BASE) & ~0x1f;
+
+	writel(intc_irq_bit(data), jz_intc_base + JZ_REG_INTC_CLEAR_MASK + offset);
 }
 
 static void intc_irq_mask(struct irq_data *data)
 {
-	writel(intc_irq_bit(data), jz_intc_base + JZ_REG_INTC_SET_MASK);
+	unsigned int offset = (data->irq - JZ47XX_IRQ_BASE) & ~0x1f;
+	writel(intc_irq_bit(data), jz_intc_base + JZ_REG_INTC_SET_MASK + offset);
 }
 
 static int intc_irq_set_wake(struct irq_data *data, unsigned int on)
 {
+	unsigned int bank = (data->irq - JZ47XX_IRQ_BASE) >> 5;
 	if (on)
-		jz_intc_wakeup |= intc_irq_bit(data);
+		jz_intc_wakeup[bank] |= intc_irq_bit(data);
 	else
-		jz_intc_wakeup &= ~intc_irq_bit(data);
+		jz_intc_wakeup[bank] &= ~intc_irq_bit(data);
 
 	return 0;
 }
@@ -79,11 +84,16 @@ static struct irq_chip intc_irq_type = {
 static irqreturn_t jz4740_cascade(int irq, void *data)
 {
 	uint32_t irq_reg;
+	unsigned int i;
 
-	irq_reg = readl(jz_intc_base + JZ_REG_INTC_PENDING);
+	for (i = 0; i < jz_intc_num_banks; ++i) {
+		irq_reg = readl(jz_intc_base + i * 0x20 + JZ_REG_INTC_PENDING);
 
-	if (irq_reg)
-		generic_handle_irq(__fls(irq_reg) + JZ47XX_IRQ_BASE);
+		if (irq_reg) {
+			generic_handle_irq(__fls(irq_reg) + JZ47XX_IRQ_BASE + i * 0x20);
+			break;
+		}
+	}
 
 	return IRQ_HANDLED;
 }
@@ -93,17 +103,20 @@ static struct irqaction jz4740_cascade_action = {
 	.name = "JZ4740 cascade interrupt",
 };
 
-void __init arch_init_irq(void)
+void __init jz47xx_intc_init(unsigned int num_banks)
 {
 	int i;
 	mips_cpu_irq_init();
 
-	jz_intc_base = ioremap(JZ4740_INTC_BASE_ADDR, 0x14);
+	jz_intc_base = ioremap(JZ4740_INTC_BASE_ADDR, 0x20 * num_banks);
+	jz_intc_num_banks = num_banks;
 
 	/* Mask all irqs */
-	writel(0xffffffff, jz_intc_base + JZ_REG_INTC_SET_MASK);
+	for (i = 0; i < num_banks; ++i) {
+		writel(0xffffffff, jz_intc_base + JZ_REG_INTC_SET_MASK + i * 0x20);
+	}
 
-	for (i = JZ47XX_IRQ_BASE; i < JZ47XX_IRQ_BASE + 32; i++) {
+	for (i = JZ47XX_IRQ_BASE; i < JZ47XX_IRQ_BASE + 32 * num_banks; i++) {
 		set_irq_chip_data(i, (void *)IRQ_BIT(i));
 		set_irq_chip_and_handler(i, &intc_irq_type, handle_level_irq);
 	}
@@ -124,15 +137,29 @@ asmlinkage void plat_irq_dispatch(void)
 
 void jz4740_intc_suspend(void)
 {
-	jz_intc_saved = readl(jz_intc_base + JZ_REG_INTC_MASK);
-	writel(~jz_intc_wakeup, jz_intc_base + JZ_REG_INTC_SET_MASK);
-	writel(jz_intc_wakeup, jz_intc_base + JZ_REG_INTC_CLEAR_MASK);
+	unsigned int offset;
+	unsigned int i;
+
+	for (i = 0; i < jz_intc_num_banks; ++i) {
+		offset = i * 0x20;
+
+		jz_intc_saved[i] = readl(jz_intc_base + JZ_REG_INTC_MASK + offset);
+		writel(~jz_intc_wakeup[i], jz_intc_base + JZ_REG_INTC_SET_MASK + offset);
+		writel(jz_intc_wakeup[i], jz_intc_base + JZ_REG_INTC_CLEAR_MASK + offset);
+	}
 }
 
 void jz4740_intc_resume(void)
 {
-	writel(~jz_intc_saved, jz_intc_base + JZ_REG_INTC_CLEAR_MASK);
-	writel(jz_intc_saved, jz_intc_base + JZ_REG_INTC_SET_MASK);
+	unsigned int offset;
+	unsigned int i;
+
+	for (i = 0; i < jz_intc_num_banks; ++i) {
+		offset = i * 0x20;
+
+		writel(~jz_intc_saved[i], jz_intc_base + JZ_REG_INTC_CLEAR_MASK + offset);
+		writel(jz_intc_saved[i], jz_intc_base + JZ_REG_INTC_SET_MASK + offset);
+	}
 }
 
 #ifdef CONFIG_DEBUG_FS

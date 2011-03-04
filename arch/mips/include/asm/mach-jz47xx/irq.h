@@ -22,4 +22,6 @@
 /* 1st-level interrupts */
 #define JZ47XX_IRQ(x)		(JZ47XX_IRQ_BASE + (x))
 
+extern void __init jz47xx_intc_init(unsigned int num_banks);
+
 #endif
