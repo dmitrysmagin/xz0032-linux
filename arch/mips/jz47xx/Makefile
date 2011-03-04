@@ -9,6 +9,7 @@ obj-y += prom.o irq.o reset.o setup.o \
 
 obj-$(CONFIG_JZ47XX_TIMER_CSRC) += timer-csrc.o
 obj-$(CONFIG_JZ47XX_TIMER_CEVT) += timer-cevt.o
+obj-$(CONFIG_JZ47XX_OST) += ost.o
 obj-$(CONFIG_JZ47XX_GPIOV2) += gpiov2.o
 obj-$(CONFIG_DEBUG_FS) += clock-debugfs.o
 
