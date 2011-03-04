@@ -43,6 +43,13 @@
 #define JZ4740_IRQ_LCD		JZ47XX_IRQ(30)
 
 /* 2nd-level interrupts */
+#define JZ47XX_IRQ_DMA(x)	(JZ47XX_IRQ(32) + (x))
+
+#define JZ4740_IRQ_GPIO(x)	(JZ47XX_IRQ(48) + (x))
+
 #define JZ4740_IRQ_ADC_BASE	JZ47XX_IRQ(176)
+
+#define NR_IRQS			182
+
 
 #endif
