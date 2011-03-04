@@ -55,6 +55,8 @@ int __init jz47xx_timer_csrc_init(unsigned int timer_id)
 		return ret;
 	}
 
+	jz4740_timer_start(jz47xx_timer_clocksource);
+
 	jz4740_timer_set_ctrl(jz47xx_timer_clocksource,
 		JZ_TIMER_CTRL_PRESCALE_16 | JZ_TIMER_CTRL_SRC_EXT);
 
