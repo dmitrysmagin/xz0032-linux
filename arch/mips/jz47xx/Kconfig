@@ -10,6 +10,12 @@ config MACH_JZ4740
 	select JZ47XX_TIMER_CEVT
 	select JZ47XX_GPIOV2
 
+config MACH_JZ4750
+	bool "JZ4750"
+	select JZ47XX_TIMER_CSRC
+	select JZ47XX_TIMER_CEVT
+	select JZ47XX_GPIOV2
+
 config MACH_JZ4760
 	bool "JZ4760"
 	select JZ47XX_TIMER_CSRC
@@ -19,6 +25,7 @@ config MACH_JZ4760
 endchoice
 
 source "arch/mips/jz47xx/jz4740/Kconfig"
+source "arch/mips/jz47xx/jz4750/Kconfig"
 source "arch/mips/jz47xx/jz4760/Kconfig"
 
 config HAVE_PWM
