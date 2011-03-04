@@ -25,14 +25,15 @@
 #include "clock.h"
 #include "timer.h"
 
-#define TIMER_CLOCKEVENT 0
-#define TIMER_CLOCKSOURCE 1
+
+static unsigned int jz4740_jz4740_timer_clockevent;
+static unsigned int jz4740_jz4740_timer_clocksource;
 
 static uint16_t jz4740_jiffies_per_tick;
 
 static cycle_t jz4740_clocksource_read(struct clocksource *cs)
 {
-	return jz4740_timer_get_count(TIMER_CLOCKSOURCE);
+	return jz4740_timer_get_count(jz4740_timer_clocksource);
 }
 
 static struct clocksource jz4740_clocksource = {
@@ -47,10 +48,10 @@ static irqreturn_t jz4740_clockevent_irq(int irq, void *devid)
 {
 	struct clock_event_device *cd = devid;
 
-	jz4740_timer_ack_full(TIMER_CLOCKEVENT);
+	jz4740_timer_ack_full(jz4740_timer_clockevent);
 
 	if (cd->mode != CLOCK_EVT_MODE_PERIODIC)
-		jz4740_timer_disable(TIMER_CLOCKEVENT);
+		jz4740_timer_disable(jz4740_timer_clockevent);
 
 	cd->event_handler(cd);
 
@@ -62,15 +63,15 @@ static void jz4740_clockevent_set_mode(enum clock_event_mode mode,
 {
 	switch (mode) {
 	case CLOCK_EVT_MODE_PERIODIC:
-		jz4740_timer_set_count(TIMER_CLOCKEVENT, 0);
-		jz4740_timer_set_period(TIMER_CLOCKEVENT, jz4740_jiffies_per_tick);
+		jz4740_timer_set_count(jz4740_timer_clockevent, 0);
+		jz4740_timer_set_period(jz4740_timer_clockevent, jz4740_jiffies_per_tick);
 	case CLOCK_EVT_MODE_RESUME:
-		jz4740_timer_irq_full_enable(TIMER_CLOCKEVENT);
-		jz4740_timer_enable(TIMER_CLOCKEVENT);
+		jz4740_timer_irq_full_enable(jz4740_timer_clockevent);
+		jz4740_timer_enable(jz4740_timer_clockevent);
 		break;
 	case CLOCK_EVT_MODE_ONESHOT:
 	case CLOCK_EVT_MODE_SHUTDOWN:
-		jz4740_timer_disable(TIMER_CLOCKEVENT);
+		jz4740_timer_disable(jz4740_timer_clockevent);
 		break;
 	default:
 		break;
@@ -80,9 +81,9 @@ static void jz4740_clockevent_set_mode(enum clock_event_mode mode,
 static int jz4740_clockevent_set_next(unsigned long evt,
 	struct clock_event_device *cd)
 {
-	jz4740_timer_set_count(TIMER_CLOCKEVENT, 0);
-	jz4740_timer_set_period(TIMER_CLOCKEVENT, evt);
-	jz4740_timer_enable(TIMER_CLOCKEVENT);
+	jz4740_timer_set_count(jz4740_timer_clockevent, 0);
+	jz4740_timer_set_period(jz4740_timer_clockevent, evt);
+	jz4740_timer_enable(jz4740_timer_clockevent);
 
 	return 0;
 }
@@ -103,13 +104,18 @@ static struct irqaction timer_irqaction = {
 	.dev_id		= &jz4740_clockevent,
 };
 
-void __init plat_time_init(void)
+void __init jz4740_timer_csrc_init(int irq, unsigned int csrc, unsigned int cevt)
 {
 	int ret;
 	uint32_t clk_rate;
 	uint16_t ctrl;
 
 	jz4740_timer_init();
+
+	jz4740_timer_clocksource = csrc;
+	jz4740_timer_clockevent = cevt;
+
+	jz4740_clockevent.irq = irq;
 
 	clk_rate = jz4740_clock_bdata.ext_rate >> 4;
 	jz4740_jiffies_per_tick = DIV_ROUND_CLOSEST(clk_rate, HZ);
@@ -127,18 +133,18 @@ void __init plat_time_init(void)
 	if (ret)
 		printk(KERN_ERR "Failed to register clocksource: %d\n", ret);
 
-	setup_irq(JZ4740_IRQ_TCU0, &timer_irqaction);
+	setup_irq(irq, &timer_irqaction);
 
 	ctrl = JZ_TIMER_CTRL_PRESCALE_16 | JZ_TIMER_CTRL_SRC_EXT;
 
-	jz4740_timer_set_ctrl(TIMER_CLOCKEVENT, ctrl);
-	jz4740_timer_set_ctrl(TIMER_CLOCKSOURCE, ctrl);
+	jz4740_timer_set_ctrl(jz4740_timer_clockevent, ctrl);
+	jz4740_timer_set_ctrl(jz4740_timer_clocksource, ctrl);
 
-	jz4740_timer_set_period(TIMER_CLOCKEVENT, jz4740_jiffies_per_tick);
-	jz4740_timer_irq_full_enable(TIMER_CLOCKEVENT);
+	jz4740_timer_set_period(jz4740_timer_clockevent, jz4740_jiffies_per_tick);
+	jz4740_timer_irq_full_enable(jz4740_timer_clockevent);
 
-	jz4740_timer_set_period(TIMER_CLOCKSOURCE, 0xffff);
+	jz4740_timer_set_period(jz4740_timer_clocksource, 0xffff);
 
-	jz4740_timer_enable(TIMER_CLOCKEVENT);
-	jz4740_timer_enable(TIMER_CLOCKSOURCE);
+	jz4740_timer_enable(jz4740_timer_clockevent);
+	jz4740_timer_enable(jz4740_timer_clocksource);
 }
