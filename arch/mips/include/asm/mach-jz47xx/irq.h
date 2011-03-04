@@ -22,12 +22,4 @@
 /* 1st-level interrupts */
 #define JZ47XX_IRQ(x)		(JZ47XX_IRQ_BASE + (x))
 
-/* 2nd-level interrupts */
-#define JZ47XX_IRQ_DMA(x)	(JZ47XX_IRQ(32) + (x))
-
-#define JZ47XX_IRQ_INTC_GPIO(x) (JZ47XX_IRQ_GPIO(0) - (x))
-#define JZ47XX_IRQ_GPIO(x)	(JZ47XX_IRQ(48) + (x))
-
-#define NR_IRQS			182
-
 #endif
