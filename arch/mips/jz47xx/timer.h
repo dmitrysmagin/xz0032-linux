@@ -73,17 +73,17 @@ static inline void jz4740_timer_start(unsigned int timer)
 
 static inline bool jz4740_timer_is_enabled(unsigned int timer)
 {
-	return readb(jz4740_timer_base + JZ_REG_TIMER_ENABLE) & BIT(timer);
+	return readw(jz4740_timer_base + JZ_REG_TIMER_ENABLE) & BIT(timer);
 }
 
 static inline void jz4740_timer_enable(unsigned int timer)
 {
-	writeb(BIT(timer), jz4740_timer_base + JZ_REG_TIMER_ENABLE_SET);
+	writew(BIT(timer), jz4740_timer_base + JZ_REG_TIMER_ENABLE_SET);
 }
 
 static inline void jz4740_timer_disable(unsigned int timer)
 {
-	writeb(BIT(timer), jz4740_timer_base + JZ_REG_TIMER_ENABLE_CLEAR);
+	writew(BIT(timer), jz4740_timer_base + JZ_REG_TIMER_ENABLE_CLEAR);
 }
 
 
