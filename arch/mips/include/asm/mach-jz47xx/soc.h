@@ -1,5 +1,5 @@
-#ifndef __ASM_MACH_JZ4740_SOC_H__
-#define __ASM_MACH_JZ4740_SOC_H__
+#ifndef __ASM_MACH_JZ47XX_SOC_H__
+#define __ASM_MACH_JZ47XX_SOC_H__
 
 static inline bool soc_is_jz4740(void)
 {
@@ -9,5 +9,15 @@ static inline bool soc_is_jz4740(void)
 	return false;
 #endif
 }
+
+static inline bool soc_is_jz4760(void)
+{
+#ifdef CONFIG_MACH_JZ4760
+	return true;
+#else
+	return false;
+#endif
+}
+
 
 #endif

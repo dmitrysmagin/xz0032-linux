@@ -4,7 +4,7 @@
 
 # Object file lists.
 
-obj-y += prom.o irq.o reset.o setup.o dma.o \
+obj-y += prom.o irq.o reset.o setup.o \
 	timer.o pwm.o serial.o
 
 obj-$(CONFIG_JZ47XX_TIMER_CSRC) += timer-csrc.o

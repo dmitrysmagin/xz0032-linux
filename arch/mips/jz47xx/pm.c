@@ -18,7 +18,7 @@
 #include <linux/delay.h>
 #include <linux/suspend.h>
 
-#include <asm/mach-jz4740/clock.h>
+#include <asm/mach-jz47xx/jz4740/clock.h>
 
 #include "clock.h"
 #include "irq.h"

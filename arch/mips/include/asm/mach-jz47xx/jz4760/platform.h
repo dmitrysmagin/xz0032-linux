@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 2009-2010, Lars-Peter Clausen <lars@metafoo.de>
- *  JZ4740 setup code
+ *  JZ4740 platform device definitions
  *
  *  This program is free software; you can redistribute it and/or modify it
  *  under  the terms of the GNU General  Public License as published by the
@@ -13,24 +13,12 @@
  *
  */
 
-#include <linux/init.h>
-#include <linux/kernel.h>
 
-#include <asm/mach-jz47xx/soc.h>
+#ifndef __JZ4740_PLATFORM_H
+#define __JZ4740_PLATFORM_H
 
-#include "reset.h"
+#include <linux/platform_device.h>
 
-void __init plat_mem_setup(void)
-{
-	jz4740_reset_init();
-}
+void jz4760_serial_device_register(void);
 
-const char *get_system_type(void)
-{
-	if (soc_is_jz4740())
-		return "JZ4740";
-	else if(soc_is_jz4760())
-		return "JZ4760";
-	else
-		return "unknown";
-}
+#endif
