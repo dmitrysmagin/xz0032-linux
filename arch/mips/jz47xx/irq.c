@@ -29,7 +29,7 @@
 #include <asm/mipsregs.h>
 #include <asm/irq_cpu.h>
 
-#include <jz4740/base.h>
+#include <asm/mach-jz47xx/base.h>
 
 static unsigned int jz_intc_num_banks;
 static void __iomem *jz_intc_base;
@@ -108,7 +108,7 @@ void __init jz47xx_intc_init(unsigned int num_banks)
 	int i;
 	mips_cpu_irq_init();
 
-	jz_intc_base = ioremap(JZ4740_INTC_BASE_ADDR, 0x20 * num_banks);
+	jz_intc_base = ioremap(JZ47XX_INTC_BASE_ADDR, 0x20 * num_banks);
 	jz_intc_num_banks = num_banks;
 
 	/* Mask all irqs */

@@ -22,8 +22,9 @@
 #include <linux/dma-mapping.h>
 
 #include <jz4750/platform.h>
-#include <jz4750/base.h>
 #include <jz4750/irq.h>
+
+#include <asm/mach-jz47xx/base.h>
 
 #include <linux/serial_core.h>
 #include <linux/serial_8250.h>
@@ -39,7 +40,7 @@
 		.regshift = 2, \
 		.serial_out = jz4740_serial_out, \
 		.type = PORT_16550, \
-		.mapbase = JZ4750_UART ## _id ## _BASE_ADDR, \
+		.mapbase = JZ47XX_UART ## _id ## _BASE_ADDR, \
 		.irq = JZ4750_IRQ_UART ## _id, \
 	}
 

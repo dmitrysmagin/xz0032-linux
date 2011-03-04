@@ -18,8 +18,9 @@
 
 #include <asm/reboot.h>
 
-#include <jz4740/base.h>
 #include <jz4740/timer.h>
+
+#include <asm/mach-jz47xx/base.h>
 
 static void jz4740_halt(void)
 {
@@ -39,7 +40,7 @@ static void jz4740_halt(void)
 
 static void jz4740_restart(char *command)
 {
-	void __iomem *wdt_base = ioremap(JZ4740_WDT_BASE_ADDR, 0x0f);
+	void __iomem *wdt_base = ioremap(JZ47XX_WDT_BASE_ADDR, 0x0f);
 
 	jz4740_timer_enable_watchdog();
 
@@ -60,7 +61,7 @@ static void jz4740_restart(char *command)
 
 static void jz4740_power_off(void)
 {
-	void __iomem *rtc_base = ioremap(JZ4740_RTC_BASE_ADDR, 0x24);
+	void __iomem *rtc_base = ioremap(JZ47XX_RTC_BASE_ADDR, 0x24);
 	uint32_t ctrl;
 
 	do {

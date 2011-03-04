@@ -23,7 +23,8 @@
 #include <linux/err.h>
 
 #include <jz4740/clock.h>
-#include <jz4740/base.h>
+
+#include <asm/mach-jz47xx/base.h>
 
 #include "../clock.h"
 
@@ -893,7 +894,7 @@ static int jz4740_clock_init(void)
 {
 	uint32_t val;
 
-	jz_clock_base = ioremap(JZ4740_CPM_BASE_ADDR, 0x100);
+	jz_clock_base = ioremap(JZ47XX_CPM_BASE_ADDR, 0x100);
 	if (!jz_clock_base)
 		return -EBUSY;
 
