@@ -290,7 +290,7 @@ static void jz_gpio_irq_demux_handler(unsigned int irq, struct irq_desc *desc)
 
 	jz_gpio_check_trigger_both(chip, irq);
 
-	gpio_irq += (chip->id << 5) + JZ47XX_IRQ_GPIO(0);
+	gpio_irq += (chip->id << 5) + jz_gpio_irq_base;
 
 	generic_handle_irq(gpio_irq);
 };
