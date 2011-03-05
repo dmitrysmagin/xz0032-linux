@@ -32,6 +32,27 @@
 #include "../serial.h"
 #include "../clock.h"
 
+/* RTC controller */
+static struct resource jz4750_rtc_resources[] = {
+	{
+		.start  = JZ47XX_RTC_BASE_ADDR,
+		.end    = JZ47XX_RTC_BASE_ADDR + 0x38 - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	{
+		.start  = JZ4750_IRQ_RTC,
+		.end    = JZ4750_IRQ_RTC,
+		.flags  = IORESOURCE_IRQ,
+	},
+};
+
+struct platform_device jz4750_rtc_device = {
+	.name           = "jz4740-rtc",
+	.id             = -1,
+	.num_resources  = ARRAY_SIZE(jz4750_rtc_resources),
+	.resource       = jz4750_rtc_resources,
+};
+
 /* Serial */
 #define JZ4750_UART_DATA(_id) \
 	{ \
