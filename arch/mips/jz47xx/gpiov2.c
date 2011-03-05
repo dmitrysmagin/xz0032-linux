@@ -491,6 +491,7 @@ int __init jz47xx_gpio_init(struct jz_gpio_chip *chips, size_t num,
 	if (ret)
 		return ret;
 
+	jz_gpio_chips = chips;
 	jz_gpio_num_chips = num;
 	jz_gpio_irq_base = irq_base;
 
