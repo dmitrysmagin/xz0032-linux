@@ -19,6 +19,7 @@
 #include <linux/platform_device.h>
 
 extern struct platform_device jz4750_rtc_device;
+extern struct platform_device jz4750_udc_device;
 
 void jz4750_serial_device_register(void);
 

@@ -2240,18 +2240,18 @@ static int __devinit jz4740_udc_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
-	jz4740_udc->clk = clk_get(&pdev->dev, "udc");
-	if (IS_ERR(jz4740_udc->clk)) {
-		ret = PTR_ERR(jz4740_udc->clk);
-		dev_err(&pdev->dev, "Failed to get udc clock: %d\n", ret);
-		goto err_device_unregister;
-	}
-
 	jz4740_udc->phy_clk = clk_get(&pdev->dev, "udc-phy");
 	if (IS_ERR(jz4740_udc->phy_clk)) {
 		ret = PTR_ERR(jz4740_udc->phy_clk);
 		dev_err(&pdev->dev, "Failed to get udc phy clock: %d\n", ret);
 		goto err_device_unregister;
+	}
+
+	jz4740_udc->clk = clk_get(&pdev->dev, "udc");
+	if (IS_ERR(jz4740_udc->clk)) {
+		ret = PTR_ERR(jz4740_udc->clk);
+		dev_err(&pdev->dev, "Failed to get udc clock: %d\n", ret);
+		goto err_phy_clk_put;
 	}
 
 	platform_set_drvdata(pdev, jz4740_udc);
@@ -2298,6 +2298,8 @@ err_iounmap:
 	iounmap(jz4740_udc->base);
 err_release_mem_region:
 	release_mem_region(jz4740_udc->mem->start, resource_size(jz4740_udc->mem));
+err_phy_clk_put:
+	clk_put(jz4740_udc->phy_clk);
 err_clk_put:
 	clk_put(jz4740_udc->clk);
 err_device_unregister:
@@ -2320,6 +2322,7 @@ static int __devexit jz4740_udc_remove(struct platform_device *pdev)
 	iounmap(dev->base);
 	release_mem_region(dev->mem->start, resource_size(dev->mem));
 	clk_put(dev->clk);
+	clk_put(dev->phy_clk);
 
 	platform_set_drvdata(pdev, NULL);
 	device_unregister(&dev->gadget.dev);
