@@ -32,6 +32,32 @@
 #include "../serial.h"
 #include "../clock.h"
 
+/* UDC (USB gadget controller) */
+static struct resource jz4750_usb_gdt_resources[] = {
+	{
+		.start  = JZ47XX_UDC_BASE_ADDR,
+		.end    = JZ47XX_UDC_BASE_ADDR + 0x1000 - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	{
+		.start  = JZ4750_IRQ_UDC,
+		.end    = JZ4750_IRQ_UDC,
+		.flags  = IORESOURCE_IRQ,
+        },
+};
+
+struct platform_device jz4750_udc_device = {
+	.name           = "jz-udc",
+	.id             = -1,
+	.dev = {
+		.dma_mask = &jz4750_udc_device.dev.coherent_dma_mask,
+		.coherent_dma_mask = DMA_BIT_MASK(32),
+	},
+	.num_resources  = ARRAY_SIZE(jz4750_usb_gdt_resources),
+	.resource       = jz4750_usb_gdt_resources,
+};
+
+
 /* RTC controller */
 static struct resource jz4750_rtc_resources[] = {
 	{
