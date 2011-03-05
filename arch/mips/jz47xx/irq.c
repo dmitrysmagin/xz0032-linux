@@ -111,6 +111,12 @@ void __init jz47xx_intc_init(unsigned int num_banks)
 	jz_intc_base = ioremap(JZ47XX_INTC_BASE_ADDR, 0x20 * num_banks);
 	jz_intc_num_banks = num_banks;
 
+#if defined(CONFIG_MACH_JZ4750)
+	write_c0_cause(0);
+	clear_c0_status(0xff1f); /* clear ERL */
+	set_c0_status(0x0400);   /* set IP2 */
+#endif
+
 	/* Mask all irqs */
 	for (i = 0; i < num_banks; ++i) {
 		writel(0xffffffff, jz_intc_base + JZ_REG_INTC_SET_MASK + i * 0x20);
