@@ -57,6 +57,33 @@ struct platform_device jz4750_udc_device = {
 	.resource       = jz4750_usb_gdt_resources,
 };
 
+/* NAND controller */
+static struct resource jz4750_nand_resources[] = {
+	{
+		.name   = "mmio",
+		.start  = JZ47XX_EMC_BASE_ADDR,
+		.end    = JZ47XX_EMC_BASE_ADDR + 0x1000 - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	{
+		.name   = "bch",
+		.start  = JZ47XX_BCH_BASE_ADDR,
+		.end    = JZ47XX_BCH_BASE_ADDR + 0x40 - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+	{
+		.name   = "bank",
+		.start  = 0x18000000,
+		.end    = 0x180C0000 - 1,
+		.flags  = IORESOURCE_MEM,
+	},
+};
+
+struct platform_device jz4750_nand_device = {
+	.name = "jz4750-nand",
+	.num_resources = ARRAY_SIZE(jz4750_nand_resources),
+	.resource = jz4750_nand_resources,
+};
 
 /* RTC controller */
 static struct resource jz4750_rtc_resources[] = {
