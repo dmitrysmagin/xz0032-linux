@@ -21,13 +21,62 @@
 
 #include "../clock.h"
 
+#include <jz4750_nand.h>
+
+/* NAND */
+static struct nand_ecclayout xz0032_ecclayout = {
+	.eccbytes = 52,
+	.eccpos = {
+		3,  4,  5,  6,  7,  8,  9,  10,
+		11, 12, 13, 14, 15, 16, 17, 18,
+		19, 20, 21, 22, 23, 24, 25, 26,
+		27, 28, 29, 30, 31, 32, 33, 34,
+		35, 36, 37, 38, 39, 40, 41, 42,
+		43, 44, 45, 46, 47, 48, 49, 50,
+		51, 52, 53, 54, 55,
+	},
+	.oobfree = {
+		{ .offset = 0,  .length = 3 },
+		{ .offset = 56, .length = 8 },
+	},
+};
+
+static struct mtd_partition xz0032_partitions[] = {
+	{
+		.name   = "u-boot",
+		.offset = 0,
+		.size   = 1  * 0x100000,
+	},
+	{
+		.name   = "kernel",
+		.offset = 1  * 0x100000,
+		.size   = 15 * 0x100000,
+	},
+	{
+		.name   = "rootfs",
+		.offset = 16 * 0x100000,
+		.size   = (1024 - 16) * 0x100000,
+	},
+};
+
+static struct jz_nand_platform_data xz0032_nand_pdata = {
+	.bch_8bit       = 1,
+	.ecc_layout     = &xz0032_ecclayout,
+	.partitions     = xz0032_partitions,
+	.num_partitions = ARRAY_SIZE(xz0032_partitions),
+	.busy_gpio      = 91,
+};
+
 static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_rtc_device,
 	&jz4750_udc_device,
+	&jz4750_nand_device,
 };
 
 static int __init xz0032_init_platform_devices(void)
 {
+	jz4750_nand_device.dev.platform_data = &xz0032_nand_pdata;
+
 	jz4750_serial_device_register();
 
 	return platform_add_devices(jz_platform_devices,
