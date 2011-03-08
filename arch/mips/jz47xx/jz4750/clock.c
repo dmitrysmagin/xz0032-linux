@@ -96,7 +96,13 @@
 #define JZ_CLOCK_SLEEP_CTRL_SUSPEND_UHC BIT(7)
 #define JZ_CLOCK_SLEEP_CTRL_ENABLE_UDC BIT(6)
 
+#define JZ_REG_RTC_CONTROL		0x00
+
+#define JZ_RTC_WRITE_READY		BIT(7)
+#define JZ_RTC_SELECT_EXCLK		BIT(1)
+
 static void __iomem *jz_clock_base;
+static void __iomem *jz_rtc_base;
 static spinlock_t jz_clock_lock;
 static LIST_HEAD(jz_clocks);
 
@@ -282,6 +288,14 @@ static struct clk_ops jz_clk_static_ops = {
 static struct static_clk jz_clk_ext = {
 	.clk = {
 		.name = "ext",
+		.gate_bit = JZ47XX_CLK_NOT_GATED,
+		.ops = &jz_clk_static_ops,
+	},
+};
+
+static struct static_clk jz_clk_rtc_ext = {
+	.clk = {
+		.name = "rtc-ext",
 		.gate_bit = JZ47XX_CLK_NOT_GATED,
 		.ops = &jz_clk_static_ops,
 	},
@@ -631,6 +645,35 @@ static struct divided_clk jz4750_clock_divided_clks[] = {
 	},
 };
 
+static unsigned long jz_clk_rtc_get_rate(struct clk *clk)
+{
+	if (clk->parent == &jz_clk_ext.clk)
+		return clk_get_rate(clk->parent) / 512;
+
+	return clk_get_rate(clk->parent);
+}
+
+static int jz_clk_rtc_set_parent(struct clk *clk, struct clk *parent)
+{
+	uint32_t reg;
+
+	reg = readl(jz_rtc_base + JZ_REG_RTC_CONTROL);
+
+	if (parent == &jz_clk_ext.clk)
+		reg |= JZ_RTC_SELECT_EXCLK;
+	else if (parent == &jz_clk_rtc_ext.clk)
+		reg &= ~JZ_RTC_SELECT_EXCLK;
+	else
+		return -EINVAL;
+
+	while(!(readl(jz_rtc_base + JZ_REG_RTC_CONTROL) & JZ_RTC_WRITE_READY));
+	writel(reg, jz_rtc_base + JZ_REG_RTC_CONTROL);
+
+	clk->parent = parent;
+
+	return 0;
+}
+
 static const struct clk_ops jz_clk_udc_phy_ops = {
 	.enable = jz_clk_udc_phy_enable,
 	.disable = jz_clk_udc_phy_disable,
@@ -644,6 +687,14 @@ static const struct clk_ops jz_clk_udc_ops = {
 	.enable = jz_clk_udc_enable,
 	.disable = jz_clk_udc_disable,
 	.is_enabled = jz_clk_udc_is_enabled,
+};
+
+static const struct clk_ops jz_clk_rtc_ops = {
+	.get_rate = jz_clk_rtc_get_rate,
+	.set_parent = jz_clk_rtc_set_parent,
+	.enable = jz_clk_enable_gating,
+	.disable = jz_clk_disable_gating,
+	.is_enabled = jz_clk_is_enabled_gating,
 };
 
 static const struct clk_ops jz_clk_simple_ops = {
@@ -705,16 +756,14 @@ static struct clk jz4750_clock_simple_clks[] = {
 		.parent = &jz4750_clock_simple_clks[0], /* udc */
 		.ops = &jz_clk_udc_phy_ops,
 	},
+	[9] = {
+		.name = "rtc",
+		.parent = &jz_clk_rtc_ext.clk,
+		.gate_bit = JZ_CLOCK_GATE_RTC,
+		.ops = &jz_clk_rtc_ops,
+	},
 };
 
-static struct static_clk jz_clk_rtc = {
-	.clk = {
-		.name = "rtc",
-		.gate_bit = JZ_CLOCK_GATE_RTC,
-		.ops = &jz_clk_static_ops,
-	},
-	.rate = 32768,
-};
 
 int clk_enable(struct clk *clk)
 {
@@ -818,13 +867,13 @@ static void clk_register_clks(void)
 	size_t i;
 
 	clk_add(&jz_clk_ext.clk);
+	clk_add(&jz_clk_rtc_ext.clk);
 	clk_add(&jz_clk_pll);
 	clk_add(&jz_clk_pll_half);
 	clk_add(&jz_clk_cpu.clk);
 	clk_add(&jz_clk_high_speed_peripheral.clk);
 	clk_add(&jz_clk_low_speed_peripheral.clk);
 	clk_add(&jz_clk_ld);
-	clk_add(&jz_clk_rtc.clk);
 
 	for (i = 0; i < ARRAY_SIZE(jz4750_clock_divided_clks); ++i)
 		clk_add(&jz4750_clock_divided_clks[i].clk);
@@ -875,10 +924,14 @@ static int jz4750_clock_init(void)
 	if (!jz_clock_base)
 		return -EBUSY;
 
+	jz_rtc_base = ioremap(JZ47XX_RTC_BASE_ADDR, 0x100);
+	if(!jz_rtc_base)
+		return -EBUSY;
+
 	spin_lock_init(&jz_clock_lock);
 
 	jz_clk_ext.rate = jz47xx_clock_bdata.ext_rate;
-	jz_clk_rtc.rate = jz47xx_clock_bdata.rtc_rate;
+	jz_clk_rtc_ext.rate = jz47xx_clock_bdata.rtc_rate;
 
 	val = jz_clk_reg_read(JZ_REG_CLOCK_SPI);
 
@@ -892,6 +945,16 @@ static int jz4750_clock_init(void)
 
 	if (val & JZ_CLOCK_CTRL_UDC_SRC_PLL)
 		jz4750_clock_simple_clks[0].parent = &jz_clk_pll_half;
+
+	val = readl(jz_rtc_base + JZ_REG_RTC_CONTROL);
+
+//	jz_clk_reg_set_bits(JZ_REG_CLOCK_GATE, BIT(2));
+
+	printk("rtc control reg: %08x\n", val);
+	printk("gate reg: %08x\n", jz_clk_reg_read(JZ_REG_CLOCK_GATE));
+
+	if (val & JZ_RTC_SELECT_EXCLK)
+		jz4750_clock_simple_clks[9].parent = &jz_clk_ext.clk;
 
 	jz4740_clock_debugfs_init();
 
