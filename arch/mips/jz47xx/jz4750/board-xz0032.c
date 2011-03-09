@@ -16,6 +16,8 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/gpio.h>
+#include <linux/power_supply.h>
+#include <linux/power/gpio-charger.h>
 
 #include <jz4750/platform.h>
 
@@ -97,12 +99,34 @@ static struct jz4740_fb_platform_data xz0032_fb_pdata = {
 	.pixclk_falling_edge = 1,
 };
 
+/* Charger */
+static char *xz0032_batteries[] = {
+	"battery",
+};
+
+static struct gpio_charger_platform_data xz0032_charger_pdata = {
+	.name = "usb",
+	.type = POWER_SUPPLY_TYPE_USB,
+	.gpio = JZ_GPIO_PORTD(16),
+	.gpio_active_low = 0,
+	.batteries = xz0032_batteries,
+	.num_batteries = ARRAY_SIZE(xz0032_batteries),
+};
+
+static struct platform_device xz0032_charger_device = {
+	.name = "gpio-charger",
+	.dev = {
+		.platform_data = &xz0032_charger_pdata,
+	},
+};
+
 static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_rtc_device,
 	&jz4750_udc_device,
 	&jz4750_nand_device,
 	&jz4750_framebuffer_device,
 	&jz4750_i2c_device,
+	&xz0032_charger_device,
 };
 
 static int __init xz0032_init_platform_devices(void)
