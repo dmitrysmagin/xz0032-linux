@@ -84,6 +84,8 @@
 #define JZ_CLOCK_SPI_SRC_PLL		BIT(31)
 #define JZ_CLOCK_SPI_DIV_MASK		0x000f
 
+#define JZ_CLOCK_CHANGE_ENABLE		BIT(22)
+
 #define JZ_CLOCK_PLL_M_MASK		0x01ff
 #define JZ_CLOCK_PLL_N_MASK		0x001f
 #define JZ_CLOCK_PLL_OD_MASK		0x0003
@@ -852,6 +854,8 @@ static int jz4750_clock_init(void)
 
 	jz_clk_ext.rate = jz47xx_clock_bdata.ext_rate;
 	jz_clk_rtc.rate = jz47xx_clock_bdata.rtc_rate;
+
+	jz_clk_reg_set_bits(JZ_REG_CLOCK_CTRL, JZ_CLOCK_CHANGE_ENABLE);
 
 	val = jz_clk_reg_read(JZ_REG_CLOCK_SPI);
 
