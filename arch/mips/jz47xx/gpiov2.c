@@ -495,8 +495,10 @@ int __init jz47xx_gpio_init(struct jz_gpio_chip *chips, size_t num,
 	jz_gpio_num_chips = num;
 	jz_gpio_irq_base = irq_base;
 
-	for (i = 0; i < num; ++i)
+	for (i = 0; i < num; ++i) {
+		chips[i].id = i;
 		jz47xx_gpio_chip_init(&chips[i], i);
+	}
 
 	printk(KERN_INFO "JZ47XX GPIO initialized\n");
 
