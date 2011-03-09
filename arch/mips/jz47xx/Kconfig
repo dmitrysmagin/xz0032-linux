@@ -10,8 +10,8 @@ config MACH_JZ4740
 	select JZ47XX_TIMER_CEVT
 	select JZ47XX_GPIOV2
 
-config MACH_JZ4750
-	bool "JZ4750"
+config MACH_JZ4750L
+	bool "JZ4750L"
 	select JZ47XX_OST
 	select JZ47XX_GPIOV2
 

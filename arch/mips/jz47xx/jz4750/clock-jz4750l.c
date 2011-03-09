@@ -22,6 +22,9 @@
 #include <linux/list.h>
 #include <linux/err.h>
 
+#include <linux/debugfs.h>
+#include <linux/seq_file.h>
+
 #include <asm/mach-jz47xx/clock.h>
 #include <asm/mach-jz47xx/base.h>
 
@@ -30,6 +33,7 @@
 #define JZ_REG_CLOCK_CTRL	0x00
 #define JZ_REG_CLOCK_LOW_POWER	0x04
 #define JZ_REG_CLOCK_PLL	0x10
+#define JZ_REG_CLOCK_PLL_STATUS	0x14
 #define JZ_REG_CLOCK_GATE	0x20
 #define JZ_REG_CLOCK_SLEEP_CTRL	0x24
 #define JZ_REG_CLOCK_I2S	0x60
@@ -43,9 +47,9 @@
 #define JZ_CLOCK_CTRL_UDIV_MASK		0x1f800000
 #define JZ_CLOCK_CTRL_CHANGE_ENABLE	BIT(22)
 #define JZ_CLOCK_CTRL_PLL_HALF		BIT(21)
-#define JZ_CLOCK_CTRL_LDIV_MASK		0x001f0000
+#define JZ_CLOCK_CTRL_IPU_MASK		0x000f0000
 #define JZ_CLOCK_CTRL_UDIV_OFFSET	23
-#define JZ_CLOCK_CTRL_LDIV_OFFSET	16
+#define JZ_CLOCK_CTRL_IPUDIV_OFFSET	16
 #define JZ_CLOCK_CTRL_MDIV_OFFSET	12
 #define JZ_CLOCK_CTRL_PDIV_OFFSET	 8
 #define JZ_CLOCK_CTRL_HDIV_OFFSET	 4
@@ -57,20 +61,21 @@
 #define JZ_CLOCK_GATE_I2C	BIT(3)
 #define JZ_CLOCK_GATE_SPI	BIT(4)
 #define JZ_CLOCK_GATE_AIC	BIT(5)
-#define JZ_CLOCK_GATE_I2S	BIT(6)
-#define JZ_CLOCK_GATE_MMC	BIT(7)
-#define JZ_CLOCK_GATE_ADC	BIT(8)
-#define JZ_CLOCK_GATE_CIM	BIT(9)
-#define JZ_CLOCK_GATE_LCD	BIT(10)
-#define JZ_CLOCK_GATE_UDC	BIT(11)
+#define JZ_CLOCK_GATE_MMC0	BIT(6)
+#define JZ_CLOCK_GATE_ADC	BIT(7)
+#define JZ_CLOCK_GATE_CIM	BIT(8)
+#define JZ_CLOCK_GATE_LCD	BIT(9)
+#define JZ_CLOCK_GATE_UDC	BIT(10)
+#define JZ_CLOCK_GATE_BCH	BIT(11)
 #define JZ_CLOCK_GATE_DMAC	BIT(12)
 #define JZ_CLOCK_GATE_IPU	BIT(13)
 #define JZ_CLOCK_GATE_UHC	BIT(14)
 #define JZ_CLOCK_GATE_UART1	BIT(15)
+#define JZ_CLOCK_GATE_MMC1	BIT(16)
 
 #define JZ_CLOCK_I2S_DIV_MASK		0x01ff
 
-#define JZ_CLOCK_LCD_DIV_MASK		0x01ff
+#define JZ_CLOCK_LCD_DIV_MASK		0x02ff
 
 #define JZ_CLOCK_MMC_DIV_MASK		0x001f
 
@@ -89,6 +94,16 @@
 #define JZ_CLOCK_PLL_M_OFFSET		23
 #define JZ_CLOCK_PLL_N_OFFSET		18
 #define JZ_CLOCK_PLL_OD_OFFSET		16
+
+#define JZ_CLOCK_PLL_STATUS_MAIN_MODE	BIT(0)
+#define JZ_CLOCK_PLL_STATUS_PLL_MODE	BIT(1)
+#define JZ_CLOCK_PLL_STATUS_STOP_MODE	BIT(2)
+#define JZ_CLOCK_PLL_STATUS_PLL_FINISH	BIT(26)
+#define JZ_CLOCK_PLL_STATUS_MAIN_FINISH	BIT(27)
+#define JZ_CLOCK_PLL_STATUS_PLL_ENABLE	BIT(28)
+#define JZ_CLOCK_PLL_STATUS_ON		BIT(29)
+#define JZ_CLOCK_PLL_STATUS_BYPASS	BIT(30)
+#define JZ_CLOCK_PLL_STATUS_OFF		BIT(31)
 
 #define JZ_CLOCK_LOW_POWER_MODE_DOZE BIT(2)
 #define JZ_CLOCK_LOW_POWER_MODE_SLEEP BIT(0)
@@ -217,7 +232,7 @@ static unsigned long jz_clk_pll_half_get_rate(struct clk *clk)
 	return jz_clk_pll_get_rate(clk->parent) >> 1;
 }
 
-static const int jz_clk_main_divs[] = {1, 2, 3, 4, 6, 8, 12, 16, 24, 32};
+static const int jz_clk_main_divs[] = {1, 2, 3, 4, 6, 8};
 
 static unsigned long jz_clk_main_round_rate(struct clk *clk, unsigned long rate)
 {
@@ -225,8 +240,8 @@ static unsigned long jz_clk_main_round_rate(struct clk *clk, unsigned long rate)
 	int div;
 
 	div = parent_rate / rate;
-	if (div > 32)
-		return parent_rate / 32;
+	if (div > 8)
+		return parent_rate / 8;
 	else if (div < 1)
 		return parent_rate;
 
@@ -331,7 +346,6 @@ static struct main_clk jz_clk_high_speed_peripheral = {
 	.div_offset = JZ_CLOCK_CTRL_HDIV_OFFSET,
 };
 
-
 static struct main_clk jz_clk_low_speed_peripheral = {
 	.clk = {
 		.name = "pclk",
@@ -339,6 +353,24 @@ static struct main_clk jz_clk_low_speed_peripheral = {
 		.ops = &jz_clk_main_ops,
 	},
 	.div_offset = JZ_CLOCK_CTRL_PDIV_OFFSET,
+};
+
+static struct main_clk jz_clk_memory = {
+	.clk = {
+		.name = "mclk",
+		.parent = &jz_clk_pll,
+		.ops = &jz_clk_main_ops,
+	},
+	.div_offset = JZ_CLOCK_CTRL_MDIV_OFFSET,
+};
+
+static struct main_clk jz_clk_ipu = {
+	.clk = {
+		.name = "ipuclk",
+		.parent = &jz_clk_pll,
+		.ops = &jz_clk_main_ops,
+	},
+	.div_offset = JZ_CLOCK_CTRL_IPUDIV_OFFSET,
 };
 
 static int jz_clk_spi_set_parent(struct clk *clk, struct clk *parent)
@@ -490,74 +522,9 @@ static int jz_clk_divided_set_rate(struct clk *clk, unsigned long rate)
 	return 0;
 }
 
-static unsigned long jz_clk_ldclk_round_rate(struct clk *clk, unsigned long rate)
-{
-	int div;
-	unsigned long parent_rate = jz_clk_pll_half_get_rate(clk->parent);
-
-	if (rate > 150000000)
-		return 150000000;
-
-	div = parent_rate / rate;
-	if (div < 1)
-		div = 1;
-	else if (div > 32)
-		div = 32;
-
-	return parent_rate / div;
-}
-
-static int jz_clk_ldclk_set_rate(struct clk *clk, unsigned long rate)
-{
-	int div;
-
-	if (rate > 150000000)
-		return -EINVAL;
-
-	div = jz_clk_pll_half_get_rate(clk->parent) / rate - 1;
-	if (div < 0)
-		div = 0;
-	else if (div > 31)
-		div = 31;
-
-	jz_clk_reg_write_mask(JZ_REG_CLOCK_CTRL, div << JZ_CLOCK_CTRL_LDIV_OFFSET,
-				JZ_CLOCK_CTRL_LDIV_MASK);
-
-	return 0;
-}
-
-static unsigned long jz_clk_ldclk_get_rate(struct clk *clk)
-{
-	int div;
-
-	div = jz_clk_reg_read(JZ_REG_CLOCK_CTRL) & JZ_CLOCK_CTRL_LDIV_MASK;
-	div >>= JZ_CLOCK_CTRL_LDIV_OFFSET;
-
-	return jz_clk_pll_half_get_rate(clk->parent) / (div + 1);
-}
-
-static const struct clk_ops jz_clk_ops_ld = {
-	.set_rate = jz_clk_ldclk_set_rate,
-	.get_rate = jz_clk_ldclk_get_rate,
-	.round_rate = jz_clk_ldclk_round_rate,
-	.enable = jz_clk_enable_gating,
-	.disable = jz_clk_disable_gating,
-	.is_enabled = jz_clk_is_enabled_gating,
-};
-
-static struct clk jz_clk_ld = {
-	.name = "lcd",
-	.gate_bit = JZ_CLOCK_GATE_LCD,
-	.parent = &jz_clk_pll_half,
-	.ops = &jz_clk_ops_ld,
-};
-
 static const struct clk_ops jz_clk_i2s_ops = {
 	.set_rate = jz_clk_divided_set_rate,
 	.get_rate = jz_clk_divided_get_rate,
-	.enable = jz_clk_enable_gating,
-	.disable = jz_clk_disable_gating,
-	.is_enabled = jz_clk_is_enabled_gating,
 	.set_parent = jz_clk_i2s_set_parent,
 };
 
@@ -583,7 +550,7 @@ static struct divided_clk jz4750_clock_divided_clks[] = {
 		.clk = {
 			.name = "i2s",
 			.parent = &jz_clk_ext.clk,
-			.gate_bit = JZ_CLOCK_GATE_I2S,
+			.gate_bit = JZ47XX_CLK_NOT_GATED,
 			.ops = &jz_clk_i2s_ops,
 		},
 		.reg = JZ_REG_CLOCK_I2S,
@@ -601,9 +568,9 @@ static struct divided_clk jz4750_clock_divided_clks[] = {
 	},
 	[2] = {
 		.clk = {
-			.name = "lcd_pclk",
+			.name = "lcd",
 			.parent = &jz_clk_pll_half,
-			.gate_bit = JZ47XX_CLK_NOT_GATED,
+			.gate_bit = JZ_CLOCK_GATE_LCD,
 			.ops = &jz_clk_divided_ops,
 		},
 		.reg = JZ_REG_CLOCK_LCD,
@@ -611,15 +578,26 @@ static struct divided_clk jz4750_clock_divided_clks[] = {
 	},
 	[3] = {
 		.clk = {
-			.name = "mmc",
+			.name = "mmc0",
 			.parent = &jz_clk_pll_half,
-			.gate_bit = JZ_CLOCK_GATE_MMC,
+			.gate_bit = JZ_CLOCK_GATE_MMC0,
 			.ops = &jz_clk_divided_ops,
 		},
 		.reg = JZ_REG_CLOCK_MMC,
 		.mask = JZ_CLOCK_MMC_DIV_MASK,
 	},
 	[4] = {
+		.clk = {
+			.name = "mmc1",
+			.parent = &jz_clk_pll_half,
+			.gate_bit = JZ_CLOCK_GATE_MMC1,
+			.ops = &jz_clk_divided_ops,
+		},
+		/* MMC0 and MMC1 have same divisor, but separate gates */
+		.reg = JZ_REG_CLOCK_MMC,
+		.mask = JZ_CLOCK_MMC_DIV_MASK,
+	},
+	[5] = {
 		.clk = {
 			.name = "uhc",
 			.parent = &jz_clk_pll_half,
@@ -673,34 +651,28 @@ static struct clk jz4750_clock_simple_clks[] = {
 	[3] = {
 		.name = "dma",
 		.parent = &jz_clk_high_speed_peripheral.clk,
-		.gate_bit = JZ_CLOCK_GATE_UART0,
+		.gate_bit = JZ_CLOCK_GATE_DMAC,
 		.ops = &jz_clk_simple_ops,
 	},
 	[4] = {
-		.name = "ipu",
-		.parent = &jz_clk_high_speed_peripheral.clk,
-		.gate_bit = JZ_CLOCK_GATE_IPU,
-		.ops = &jz_clk_simple_ops,
-	},
-	[5] = {
 		.name = "adc",
 		.parent = &jz_clk_ext.clk,
 		.gate_bit = JZ_CLOCK_GATE_ADC,
 		.ops = &jz_clk_simple_ops,
 	},
-	[6] = {
+	[5] = {
 		.name = "i2c",
 		.parent = &jz_clk_ext.clk,
 		.gate_bit = JZ_CLOCK_GATE_I2C,
 		.ops = &jz_clk_simple_ops,
 	},
-	[7] = {
+	[6] = {
 		.name = "aic",
 		.parent = &jz_clk_ext.clk,
 		.gate_bit = JZ_CLOCK_GATE_AIC,
 		.ops = &jz_clk_simple_ops,
 	},
-	[8] = {
+	[7] = {
 		.name = "udc-phy",
 		.parent = &jz4750_clock_simple_clks[0], /* udc */
 		.ops = &jz_clk_udc_phy_ops,
@@ -823,7 +795,8 @@ static void clk_register_clks(void)
 	clk_add(&jz_clk_cpu.clk);
 	clk_add(&jz_clk_high_speed_peripheral.clk);
 	clk_add(&jz_clk_low_speed_peripheral.clk);
-	clk_add(&jz_clk_ld);
+	clk_add(&jz_clk_memory.clk);
+	clk_add(&jz_clk_ipu.clk);
 	clk_add(&jz_clk_rtc.clk);
 
 	for (i = 0; i < ARRAY_SIZE(jz4750_clock_divided_clks); ++i)
@@ -900,3 +873,50 @@ static int jz4750_clock_init(void)
 	return 0;
 }
 arch_initcall(jz4750_clock_init);
+
+#ifdef CONFIG_DEBUG_FS
+
+static inline void clock_seq_reg(struct seq_file *s,
+	const char *name, unsigned int reg)
+{
+	seq_printf(s, "\t%s: %08x\n", name, readl(jz_clock_base + reg));
+}
+
+static int clock_regs_show(struct seq_file *s, void *unused)
+{
+	clock_seq_reg(s, "Control", JZ_REG_CLOCK_CTRL);
+	clock_seq_reg(s, "Low power", JZ_REG_CLOCK_LOW_POWER);
+	clock_seq_reg(s, "PLL", JZ_REG_CLOCK_PLL);
+	clock_seq_reg(s, "PLL status", JZ_REG_CLOCK_PLL_STATUS);
+	clock_seq_reg(s, "Gate", JZ_REG_CLOCK_GATE);
+	clock_seq_reg(s, "Sleep control", JZ_REG_CLOCK_SLEEP_CTRL);
+	clock_seq_reg(s, "I2S", JZ_REG_CLOCK_I2S);
+	clock_seq_reg(s, "LCD", JZ_REG_CLOCK_LCD);
+	clock_seq_reg(s, "MMC", JZ_REG_CLOCK_MMC);
+	clock_seq_reg(s, "UHC", JZ_REG_CLOCK_UHC);
+	clock_seq_reg(s, "SPI", JZ_REG_CLOCK_SPI);
+
+	return 0;
+}
+
+static int clock_regs_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, clock_regs_show, NULL);
+}
+
+static const struct file_operations clock_regs_operations = {
+	.open		= clock_regs_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= single_release,
+};
+
+static int __init clock_regs_debugfs_init(void)
+{
+	(void) debugfs_create_file("jz4750_regs_clock", S_IFREG | S_IRUGO,
+				NULL, NULL, &clock_regs_operations);
+	return 0;
+}
+subsys_initcall(clock_regs_debugfs_init);
+
+#endif

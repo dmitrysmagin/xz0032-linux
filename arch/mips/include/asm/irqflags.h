@@ -30,7 +30,7 @@ __asm__(
 	"	ei							\n"
 #else
 	"	mfc0	$1,$12						\n"
-#if defined(CONFIG_MACH_JZ4750)
+#if defined(CONFIG_MACH_JZ4750L)
 	"	ori	$1,0x19						\n"
 	"	xori	$1,0x18						\n"
 #else
@@ -93,7 +93,7 @@ __asm__(
 	"	di							\n"
 #else
 	"	mfc0	$1,$12						\n"
-#if defined(CONFIG_MACH_JZ4750)
+#if defined(CONFIG_MACH_JZ4750L)
 	"	ori	$1,0x19						\n"
 	"	xori	$1,0x19						\n"
 #else
@@ -151,7 +151,7 @@ __asm__(
 	"	andi	\\result, 1					\n"
 #else
 	"	mfc0	\\result, $12					\n"
-#if defined(CONFIG_MACH_JZ4750)
+#if defined(CONFIG_MACH_JZ4750L)
 	"	ori	$1, \\result, 0x19				\n"
 	"	xori	$1, 0x19					\n"
 #else
@@ -206,7 +206,7 @@ __asm__(
 #else
 	"	mfc0	$1, $12						\n"
 	"	andi	\\flags, 1					\n"
-#if defined(CONFIG_MACH_JZ4750)
+#if defined(CONFIG_MACH_JZ4750L)
 	"	ori	$1, 0x19					\n"
 	"	xori	$1, 0x19					\n"
 #else
