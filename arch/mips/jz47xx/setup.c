@@ -29,8 +29,8 @@ const char *get_system_type(void)
 {
 	if (soc_is_jz4740())
 		return "JZ4740";
-	else if(soc_is_jz4750())
-		return "JZ4750";
+	else if(soc_is_jz4750l())
+		return "JZ4750L";
 	else if(soc_is_jz4760())
 		return "JZ4760";
 	else
