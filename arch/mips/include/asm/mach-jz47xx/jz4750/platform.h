@@ -23,6 +23,7 @@ extern struct platform_device jz4750_udc_device;
 extern struct platform_device jz4750_nand_device;
 extern struct platform_device jz4750_framebuffer_device;
 extern struct platform_device jz4750_i2c_device;
+extern struct platform_device jz4750_adc_device;
 
 void jz4750_serial_device_register(void);
 

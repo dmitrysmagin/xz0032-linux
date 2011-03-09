@@ -18,6 +18,7 @@
 #include <linux/gpio.h>
 #include <linux/power_supply.h>
 #include <linux/power/gpio-charger.h>
+#include <linux/power/jz4740-battery.h>
 
 #include <jz4750/platform.h>
 
@@ -99,6 +100,17 @@ static struct jz4740_fb_platform_data xz0032_fb_pdata = {
 	.pixclk_falling_edge = 1,
 };
 
+/* Battery */
+static struct jz_battery_platform_data xz0032_battery_pdata = {
+	.gpio_charge = -1,
+	.info = {
+		.name = "battery",
+		.technology = POWER_SUPPLY_TECHNOLOGY_LIPO,
+		.voltage_max_design = 4100000,
+		.voltage_min_design = 2700000,
+	},
+};
+
 /* Charger */
 static char *xz0032_batteries[] = {
 	"battery",
@@ -126,6 +138,7 @@ static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_nand_device,
 	&jz4750_framebuffer_device,
 	&jz4750_i2c_device,
+	&jz4750_adc_device,
 	&xz0032_charger_device,
 };
 
@@ -133,6 +146,7 @@ static int __init xz0032_init_platform_devices(void)
 {
 	jz4750_nand_device.dev.platform_data = &xz0032_nand_pdata;
 	jz4750_framebuffer_device.dev.platform_data = &xz0032_fb_pdata;
+	jz4750_adc_device.dev.platform_data = &xz0032_battery_pdata;
 
 	jz4750_serial_device_register();
 
