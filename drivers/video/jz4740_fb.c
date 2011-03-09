@@ -475,8 +475,13 @@ static int jzfb_set_par(struct fb_info *info)
 
 	mutex_unlock(&jzfb->lock);
 
-	clk_set_rate(jzfb->lpclk, rate);
-	clk_set_rate(jzfb->ldclk, rate * 3);
+	if(jzfb->lpclk) {
+		clk_set_rate(jzfb->lpclk, rate);
+		clk_set_rate(jzfb->ldclk, rate * 3);
+	} else {
+		/* jzfb->ldclk is the pixel clock too */
+		clk_set_rate(jzfb->ldclk, rate);
+	}
 
 	return 0;
 }
@@ -666,12 +671,17 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
 		goto err_framebuffer_release;
 	}
 
+#if defined(CONFIG_MACH_JZ4750L)
+	/* This device does not have different LCD and pixel clocks */
+	jzfb->lpclk = NULL;
+#else
 	jzfb->lpclk = clk_get(&pdev->dev, "lcd_pclk");
 	if (IS_ERR(jzfb->lpclk)) {
 		ret = PTR_ERR(jzfb->lpclk);
 		dev_err(&pdev->dev, "Failed to get lcd pixel clock: %d\n", ret);
 		goto err_put_ldclk;
 	}
+#endif
 
 	jzfb->base = ioremap(mem->start, resource_size(mem));
 	if (!jzfb->base) {
@@ -737,7 +747,8 @@ err_free_devmem:
 err_iounmap:
 	iounmap(jzfb->base);
 err_put_lpclk:
-	clk_put(jzfb->lpclk);
+	if(jzfb->lpclk != NULL)
+		clk_put(jzfb->lpclk);
 err_put_ldclk:
 	clk_put(jzfb->ldclk);
 err_framebuffer_release:
@@ -764,7 +775,8 @@ static int __devexit jzfb_remove(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, NULL);
 
-	clk_put(jzfb->lpclk);
+	if(jzfb->lpclk != NULL)
+		clk_put(jzfb->lpclk);
 	clk_put(jzfb->ldclk);
 
 	framebuffer_release(jzfb->fb);

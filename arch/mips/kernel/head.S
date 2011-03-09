@@ -96,7 +96,7 @@
 	mtc0	t0, CP0_STATUS
 #else
 	mfc0	t0, CP0_STATUS
-#if defined(CONFIG_MACH_JZ4750)
+#if defined(CONFIG_MACH_JZ4750L)
 	or	t0, ST0_CU0|\set|0x19|\clr
 	xor	t0, 0x19|\clr
 #else
