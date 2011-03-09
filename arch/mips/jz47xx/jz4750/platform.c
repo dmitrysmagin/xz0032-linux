@@ -126,6 +126,32 @@ struct platform_device jz4750_rtc_device = {
 	.resource       = jz4750_rtc_resources,
 };
 
+/* ADC controller */
+static struct resource jz4750_adc_resources[] = {
+	{
+		.start	= JZ47XX_SADC_BASE_ADDR,
+		.end	= JZ47XX_SADC_BASE_ADDR + 0x30,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= JZ4750_IRQ_SADC,
+		.end	= JZ4750_IRQ_SADC,
+		.flags	= IORESOURCE_IRQ,
+	},
+	{
+		.start	= JZ4750_IRQ_ADC_BASE,
+		.end	= JZ4750_IRQ_ADC_BASE,
+		.flags	= IORESOURCE_IRQ,
+	},
+};
+
+struct platform_device jz4750_adc_device = {
+	.name		= "jz4740-adc",
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(jz4750_adc_resources),
+	.resource	= jz4750_adc_resources,
+};
+
 /* I2C controller */
 static struct resource jz4750_i2c_resources[] = {
 	{
