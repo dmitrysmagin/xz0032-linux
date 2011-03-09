@@ -102,6 +102,7 @@ static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_udc_device,
 	&jz4750_nand_device,
 	&jz4750_framebuffer_device,
+	&jz4750_i2c_device,
 };
 
 static int __init xz0032_init_platform_devices(void)

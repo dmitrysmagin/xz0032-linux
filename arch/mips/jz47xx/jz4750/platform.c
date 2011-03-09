@@ -126,6 +126,27 @@ struct platform_device jz4750_rtc_device = {
 	.resource       = jz4750_rtc_resources,
 };
 
+/* I2C controller */
+static struct resource jz4750_i2c_resources[] = {
+	{
+		.start	= JZ47XX_I2C_BASE_ADDR,
+		.end	= JZ47XX_I2C_BASE_ADDR + 0x1000 - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= JZ4750_IRQ_I2C,
+		.end	= JZ4750_IRQ_I2C,
+		.flags	= IORESOURCE_IRQ,
+	}
+};
+
+struct platform_device jz4750_i2c_device = {
+	.name		= "jz47xx-i2c",
+	.id		= 0,
+	.num_resources  = ARRAY_SIZE(jz4750_i2c_resources),
+	.resource	= jz4750_i2c_resources,
+};
+
 /* Serial */
 #define JZ4750_UART_DATA(_id) \
 	{ \

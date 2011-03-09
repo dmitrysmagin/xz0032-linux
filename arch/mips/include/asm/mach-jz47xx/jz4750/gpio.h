@@ -19,6 +19,13 @@
 #include <asm/mach-jz47xx/gpio.h>
 
 /* Port C function pins */
+#define JZ_GPIO_I2C_SDA			JZ_GPIO_PORTC(10)
+#define JZ_GPIO_I2C_SCK			JZ_GPIO_PORTC(11)
+
+#define JZ_GPIO_FUNC_I2C_SDA		JZ_GPIO_FUNC2
+#define JZ_GPIO_FUNC_I2C_SCK		JZ_GPIO_FUNC2
+
+/* Port D function pins */
 #define JZ_GPIO_LCD_DATA0		JZ_GPIO_PORTD(0)
 #define JZ_GPIO_LCD_DATA1		JZ_GPIO_PORTD(1)
 #define JZ_GPIO_LCD_DATA2		JZ_GPIO_PORTD(2)
