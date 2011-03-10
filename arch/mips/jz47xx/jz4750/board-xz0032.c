@@ -16,10 +16,12 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/gpio.h>
+#include <linux/gpio_keys.h>
 #include <linux/power_supply.h>
 #include <linux/power/gpio-charger.h>
 #include <linux/power/jz4740-battery.h>
 #include <linux/pwm_backlight.h>
+#include <linux/input.h>
 
 #include <jz4750/platform.h>
 
@@ -148,15 +150,70 @@ static struct platform_device xz0032_pwm_backlight_device = {
 	}
 };
 
+/* Buttons */
+static struct gpio_keys_button xz0032_gpio_keys_buttons[] = {
+#ifdef CONFIG_JZ4750L_XZ0032_UART0_RX_PIN_AS_KEY
+	{
+		.code		= KEY_A,
+		.gpio		= JZ_GPIO_PORTC(31),
+		.active_low	= 1,
+		.desc		= "K1",
+	},
+#endif
+	{
+		.code		= KEY_B,
+		.gpio		= JZ_GPIO_PORTD(23),
+		.active_low	= 1,
+		.desc		= "K2",
+	},
+#ifdef CONFIG_JZ4750L_XZ0032_I2C_PINS_AS_KEYS
+	{
+		.code		= KEY_VOLUMEUP,
+		.gpio		= JZ_GPIO_PORTC(10),
+		.active_low	= 1,
+		.desc		= "VOL+",
+	},
+	{
+		.code		= KEY_VOLUMEDOWN,
+		.gpio		= JZ_GPIO_PORTC(11),
+		.active_low	= 1,
+		.desc		= "VOL-",
+	},
+#endif
+	{
+		.code		= KEY_POWER,
+		.gpio		= JZ_GPIO_PORTB(31),
+		.active_low	= 1,
+		.desc		= "POWER",
+	},
+};
+
+static struct gpio_keys_platform_data xz0032_gpio_keys_data = {
+	.nbuttons = ARRAY_SIZE(xz0032_gpio_keys_buttons),
+	.buttons  = xz0032_gpio_keys_buttons,
+	.rep      = 1,
+};
+
+static struct platform_device xz0032_gpio_keys_device = {
+	.name =	"gpio-keys",
+	.id =	-1,
+	.dev = {
+		.platform_data = &xz0032_gpio_keys_data,
+	}
+};
+
 static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_rtc_device,
 	&jz4750_udc_device,
 	&jz4750_nand_device,
 	&jz4750_framebuffer_device,
+#ifndef CONFIG_JZ4750L_XZ0032_I2C_GPIO_AS_KEYS
 	&jz4750_i2c_device,
+#endif
 	&jz4750_adc_device,
 	&xz0032_charger_device,
 	&xz0032_pwm_backlight_device,
+	&xz0032_gpio_keys_device,
 };
 
 static int __init xz0032_init_platform_devices(void)

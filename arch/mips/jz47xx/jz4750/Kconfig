@@ -10,4 +10,19 @@ config JZ4750L_XZ0032
 
 endchoice
 
+config JZ4750L_XZ0032_I2C_PINS_AS_KEYS
+	bool "Use I2C pins for GPIO keys"
+	depends on JZ4750L_XZ0032
+	help
+	  XZ0032 board has I2C controller pins attached to unsoldered pads. They
+	  can alternatively be configured as GPIO and used to connect two
+	  additional keys.
+
+config JZ4750L_XZ0032_UART0_RX_PIN_AS_KEY
+	bool "Use UART0 RX pin for a GPIO key"
+	depends on JZ4750L_XZ0032
+	help
+	  XZ0032 board has UART0 RX pin attached to unsoldered pad. It can
+	  alternatively be configured as GPIO and used to connect an additional key.
+
 endif
