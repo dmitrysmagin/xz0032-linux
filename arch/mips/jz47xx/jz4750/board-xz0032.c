@@ -29,6 +29,7 @@
 
 #include <jz4750_nand.h>
 #include <jz4740_fb.h>
+#include <jz47xx_adc_keys.h>
 
 static long xz0032_panic_blink(int state) {
 	gpio_set_value(JZ_GPIO_PORTC(15), state ? 1 : 0);
@@ -207,6 +208,41 @@ static struct platform_device xz0032_gpio_keys_device = {
 	}
 };
 
+/* ADC buttons */
+static struct jz_adc_button xz0032_adc_keys[] = {
+	{
+		.code      = KEY_C,
+		.value_min = 550,
+		.value_max = 750,
+		.desc      = "K3",
+	},
+	{
+		.code      = KEY_D,
+		.value_min = 950,
+		.value_max = 1150,
+		.desc      = "K4",
+	},
+	{
+		.code      = KEY_E,
+		.value_min = 1450,
+		.value_max = 1650,
+		.desc      = "K5",
+	},
+	{
+		.code      = KEY_F,
+		.value_min = 1950,
+		.value_max = 2150,
+		.desc      = "K6",
+	},
+};
+
+static struct jz_adc_keys_platform_data xz0032_adc_keys_pdata = {
+	.buttons  = xz0032_adc_keys,
+	.nbuttons = ARRAY_SIZE(xz0032_adc_keys),
+	.rep      = 1,
+	.poll_interval = 50,
+};
+
 static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_rtc_device,
 	&jz4750_udc_device,
@@ -226,6 +262,10 @@ static int __init xz0032_init_platform_devices(void)
 	jz4750_nand_device.dev.platform_data = &xz0032_nand_pdata;
 	jz4750_framebuffer_device.dev.platform_data = &xz0032_fb_pdata;
 	jz4750_adc_device.dev.platform_data = &xz0032_battery_pdata;
+
+#ifdef CONFIG_KEYBOARD_JZ47XX_ADC
+	jz47xx_adc_keys_set_config(&xz0032_adc_keys_pdata);
+#endif
 
 	panic_blink = xz0032_panic_blink;
 
