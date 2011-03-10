@@ -358,6 +358,10 @@ static int __devinit jz4740_adc_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto err_clk_put;
 
+	/* In JZ4750, enabling a clock and issuing a request immediately
+	 * misses an irq. So keep clock running all the time. */
+	jz4740_adc_clk_enable(adc);
+
 	return 0;
 
 err_clk_put:
@@ -376,6 +380,8 @@ err_free:
 static int __devexit jz4740_adc_remove(struct platform_device *pdev)
 {
 	struct jz4740_adc *adc = platform_get_drvdata(pdev);
+
+	jz4740_adc_clk_disable(adc);
 
 	mfd_remove_devices(&pdev->dev);
 
