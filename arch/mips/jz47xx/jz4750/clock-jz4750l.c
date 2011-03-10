@@ -677,6 +677,7 @@ static struct clk jz4750_clock_simple_clks[] = {
 	[7] = {
 		.name = "udc-phy",
 		.parent = &jz4750_clock_simple_clks[0], /* udc */
+		.gate_bit = JZ47XX_CLK_NOT_GATED,
 		.ops = &jz_clk_udc_phy_ops,
 	},
 };
