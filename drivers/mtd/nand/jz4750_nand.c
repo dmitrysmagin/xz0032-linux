@@ -21,6 +21,8 @@
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
+#include <linux/err.h>
+#include <linux/clk.h>
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
@@ -75,6 +77,8 @@ struct jz_nand {
 
 	struct jz_nand_platform_data *pdata;
 	bool is_reading;
+
+	struct clk* clk_bch;
 };
 
 static inline struct jz_nand *mtd_to_jz_nand(struct mtd_info *mtd)
@@ -323,6 +327,14 @@ static int __devinit jz_nand_probe(struct platform_device *pdev)
 		}
 	}
 
+	nand->clk_bch = clk_get(NULL, "bch");
+	if(IS_ERR(nand->clk_bch)) {
+		ret = PTR_ERR(nand->clk_bch);
+		dev_err(&pdev->dev, "Failed to request BCH clock: %d\n",
+			ret);
+		goto err_gpio_free;
+	}
+
 	mtd		= &nand->mtd;
 	chip		= &nand->chip;
 	mtd->priv	= chip;
@@ -356,7 +368,7 @@ static int __devinit jz_nand_probe(struct platform_device *pdev)
 	ret = nand_scan_ident(mtd, 1, NULL);
 	if (ret) {
 		dev_err(&pdev->dev,  "Failed to scan nand\n");
-		goto err_gpio_free;
+		goto err_clk_put;
 	}
 
 	if (pdata && pdata->ident_callback) {
@@ -391,12 +403,16 @@ static int __devinit jz_nand_probe(struct platform_device *pdev)
 		goto err_nand_release;
 	}
 
+	clk_enable(nand->clk_bch);
+
 	dev_info(&pdev->dev, "Successfully registered JZ4750 NAND driver\n");
 
 	return 0;
 
 err_nand_release:
 	nand_release(&nand->mtd);
+err_clk_put:
+	clk_put(nand->clk_bch);
 err_gpio_free:
 	platform_set_drvdata(pdev, NULL);
 	gpio_free(pdata->busy_gpio);
@@ -419,6 +435,9 @@ static int __devexit jz_nand_remove(struct platform_device *pdev)
 	struct jz_nand *nand = platform_get_drvdata(pdev);
 
 	nand_release(&nand->mtd);
+
+	clk_disable(nand->clk_bch);
+	clk_put(nand->clk_bch);
 
 	/* Deassert and disable all chips */
 	writel(0, nand->base + JZ_REG_NAND_CTRL);
