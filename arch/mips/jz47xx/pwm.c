@@ -1,6 +1,6 @@
 /*
  *  Copyright (C) 2010, Lars-Peter Clausen <lars@metafoo.de>
- *  JZ4740 platform PWM support
+ *  JZ47xx platform PWM support
  *
  *  This program is free software; you can redistribute it and/or modify it
  *  under  the terms of the GNU General  Public License as published by the
@@ -20,45 +20,42 @@
 #include <linux/pwm.h>
 #include <linux/gpio.h>
 
-#include <jz4740/gpio.h>
+#include <asm/mach-jz47xx/pwm.h>
 #include "timer.h"
 
-static struct clk *jz4740_pwm_clk;
+static struct clk *jz47xx_pwm_clk;
 
-DEFINE_MUTEX(jz4740_pwm_mutex);
+static struct pwm_device* jz47xx_pwm_list;
+static int jz47xx_pwm_count;
 
-struct pwm_device {
-	unsigned int id;
-	unsigned int gpio;
-	bool used;
-};
-
-static struct pwm_device jz4740_pwm_list[] = {
-	{ 2, JZ_GPIO_PWM2, false },
-	{ 3, JZ_GPIO_PWM3, false },
-	{ 4, JZ_GPIO_PWM4, false },
-	{ 5, JZ_GPIO_PWM5, false },
-	{ 6, JZ_GPIO_PWM6, false },
-	{ 7, JZ_GPIO_PWM7, false },
-};
+DEFINE_MUTEX(jz47xx_pwm_mutex);
 
 struct pwm_device *pwm_request(int id, const char *label)
 {
-	int ret = 0;
-	struct pwm_device *pwm;
+	int ret = 0, i;
+	struct pwm_device *pwm = NULL;
 
-	if (id < 2 || id > 7 || !jz4740_pwm_clk)
+	if (!jz47xx_pwm_clk)
 		return ERR_PTR(-ENODEV);
 
-	mutex_lock(&jz4740_pwm_mutex);
+	mutex_lock(&jz47xx_pwm_mutex);
 
-	pwm = &jz4740_pwm_list[id - 2];
+	for(i = 0; i < jz47xx_pwm_count; i++) {
+		if(jz47xx_pwm_list[i].id == id) {
+			pwm = &jz47xx_pwm_list[i];
+			break;
+		}
+	}
+
+	if(!pwm)
+		return ERR_PTR(-ENODEV);
+
 	if (pwm->used)
 		ret = -EBUSY;
 	else
 		pwm->used = true;
 
-	mutex_unlock(&jz4740_pwm_mutex);
+	mutex_unlock(&jz47xx_pwm_mutex);
 
 	if (ret)
 		return ERR_PTR(ret);
@@ -103,7 +100,7 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 	if (duty_ns < 0 || duty_ns > period_ns)
 		return -EINVAL;
 
-	tmp = (unsigned long long)clk_get_rate(jz4740_pwm_clk) * period_ns;
+	tmp = (unsigned long long)clk_get_rate(jz47xx_pwm_clk) * period_ns;
 	do_div(tmp, 1000000000);
 	period = tmp;
 
@@ -161,17 +158,19 @@ void pwm_disable(struct pwm_device *pwm)
 	jz4740_timer_set_ctrl(pwm->id, ctrl);
 }
 
-static int __init jz4740_pwm_init(void)
+int __init jz47xx_pwm_init(struct pwm_device* pwm_list, int pwm_count)
 {
 	int ret = 0;
 
-	jz4740_pwm_clk = clk_get(NULL, "ext");
+	jz47xx_pwm_clk = clk_get(NULL, "ext");
 
-	if (IS_ERR(jz4740_pwm_clk)) {
-		ret = PTR_ERR(jz4740_pwm_clk);
-		jz4740_pwm_clk = NULL;
+	if (IS_ERR(jz47xx_pwm_clk)) {
+		ret = PTR_ERR(jz47xx_pwm_clk);
+		jz47xx_pwm_clk = NULL;
 	}
+
+	jz47xx_pwm_list = pwm_list;
+	jz47xx_pwm_count = pwm_count;
 
 	return ret;
 }
-subsys_initcall(jz4740_pwm_init);

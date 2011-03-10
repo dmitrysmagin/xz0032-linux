@@ -1,5 +1,5 @@
 
-obj-y += platform.o time.o gpio.o irq.o
+obj-y += platform.o time.o gpio.o irq.o pwm.o
 
 obj-$(CONFIG_MACH_JZ4750L)	+= clock-jz4750l.o
 
