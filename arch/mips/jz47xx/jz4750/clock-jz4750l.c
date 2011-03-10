@@ -680,6 +680,12 @@ static struct clk jz4750_clock_simple_clks[] = {
 		.gate_bit = JZ47XX_CLK_NOT_GATED,
 		.ops = &jz_clk_udc_phy_ops,
 	},
+	[8] = {
+		.name = "bch",
+		.parent = &jz_clk_low_speed_peripheral.clk,
+		.gate_bit = JZ_CLOCK_GATE_BCH,
+		.ops = &jz_clk_simple_ops,
+	},
 };
 
 static struct static_clk jz_clk_rtc = {
