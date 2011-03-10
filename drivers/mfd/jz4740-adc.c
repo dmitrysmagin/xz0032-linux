@@ -250,7 +250,11 @@ static struct resource jz4740_ts_resources[] = {
 const struct mfd_cell jz4740_adc_cells[] = {
 	{
 		.id = 0,
+#ifdef CONFIG_MFD_JZ4740_ADC_USE_HWMON
 		.name = "jz4740-hwmon",
+#else /* CONFIG_MFD_JZ4740_ADC_USE_KEYS */
+		.name = "jz47xx-adc-keys",
+#endif
 		.num_resources = ARRAY_SIZE(jz4740_hwmon_resources),
 		.resources = jz4740_hwmon_resources,
 

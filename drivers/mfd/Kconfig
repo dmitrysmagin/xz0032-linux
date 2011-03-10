@@ -629,6 +629,29 @@ config MFD_JZ4740_ADC
 	  Say yes here if you want support for the ADC unit in the JZ4740 SoC.
 	  This driver is necessary for jz4740-battery and jz4740-hwmon driver.
 
+choice
+	prompt "SADCIN device"
+	depends on MFD_JZ4740_ADC
+	default MFD_JZ4740_ADC_USE_HWMON
+	help
+	  JZ47xx SoCs have a generic ADC input, and different devices may be
+	  connected to that input on different boards.
+
+config MFD_JZ4740_ADC_USE_HWMON
+	bool "Generic hwmon device"
+	help
+	  Use a generic hwmon device, which allows to read raw value.
+	  You should also select jz4740-hwmon driver.
+
+config MFD_JZ4740_ADC_USE_KEYS
+	bool "ADC keys device"
+	help
+	  Emulate a keypad via several buttons connected through resistive
+	  divisors. You will also need board-specific configuration and
+	  jz47xx-adc-keys driver.
+
+endchoice
+
 config MFD_TPS6586X
 	bool "TPS6586x Power Management chips"
 	depends on I2C=y && GPIOLIB && GENERIC_HARDIRQS
