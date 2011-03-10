@@ -19,6 +19,7 @@
 #include <linux/power_supply.h>
 #include <linux/power/gpio-charger.h>
 #include <linux/power/jz4740-battery.h>
+#include <linux/pwm_backlight.h>
 
 #include <jz4750/platform.h>
 
@@ -132,6 +133,21 @@ static struct platform_device xz0032_charger_device = {
 	},
 };
 
+/* PWM controlled backlight */
+static struct platform_pwm_backlight_data xz0032_backlight_data = {
+	.pwm_id         = 5,
+	.max_brightness = 100,
+	.dft_brightness = 100,
+	.pwm_period_ns  = 10000,
+};
+
+static struct platform_device xz0032_pwm_backlight_device = {
+	.name   = "pwm-backlight",
+	.dev    = {
+		.platform_data  = &xz0032_backlight_data,
+	}
+};
+
 static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_rtc_device,
 	&jz4750_udc_device,
@@ -140,6 +156,7 @@ static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_i2c_device,
 	&jz4750_adc_device,
 	&xz0032_charger_device,
+	&xz0032_pwm_backlight_device,
 };
 
 static int __init xz0032_init_platform_devices(void)
