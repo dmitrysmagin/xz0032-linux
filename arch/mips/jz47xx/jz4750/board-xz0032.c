@@ -30,6 +30,11 @@
 #include <jz4750_nand.h>
 #include <jz4740_fb.h>
 
+static long xz0032_panic_blink(int state) {
+	gpio_set_value(JZ_GPIO_PORTC(15), state ? 1 : 0);
+	return 0;
+}
+
 /* NAND */
 static struct nand_ecclayout xz0032_ecclayout = {
 	.eccbytes = 52,
@@ -221,6 +226,8 @@ static int __init xz0032_init_platform_devices(void)
 	jz4750_nand_device.dev.platform_data = &xz0032_nand_pdata;
 	jz4750_framebuffer_device.dev.platform_data = &xz0032_fb_pdata;
 	jz4750_adc_device.dev.platform_data = &xz0032_battery_pdata;
+
+	panic_blink = xz0032_panic_blink;
 
 	jz4750_serial_device_register();
 
