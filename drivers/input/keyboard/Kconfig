@@ -193,6 +193,21 @@ config KEYBOARD_GPIO_POLLED
 	  To compile this driver as a module, choose M here: the
 	  module will be called gpio_keys_polled.
 
+config KEYBOARD_JZ47XX_ADC
+	tristate "JZ47xx ADC buttons"
+	depends on MFD_JZ4740_ADC
+	select INPUT_POLLDEV
+	help
+	  This driver implements supports for buttons connected to
+	  SADCIN analog input of JZ47xx series SoCs through a
+	  resistive divier.
+
+	  Board-specific setup logic is required to provide
+	  calibration values.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called jz47xx_adc_keys.
+
 config KEYBOARD_TCA6416
 	tristate "TCA6416/TCA6408A Keypad Support"
 	depends on I2C
