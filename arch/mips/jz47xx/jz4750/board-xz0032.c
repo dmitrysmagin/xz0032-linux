@@ -29,6 +29,7 @@
 
 #include <jz4750_nand.h>
 #include <jz4740_fb.h>
+#include <jz4740_mmc.h>
 #include <jz47xx_adc_keys.h>
 
 static long xz0032_panic_blink(int state) {
@@ -78,6 +79,29 @@ static struct jz_nand_platform_data xz0032_nand_pdata = {
 	.partitions     = xz0032_partitions,
 	.num_partitions = ARRAY_SIZE(xz0032_partitions),
 	.busy_gpio      = 91,
+};
+
+/* MMC controller */
+
+static struct jz_gpio_bulk_request xz0032_mmc1_pins[] = {
+	JZ_GPIO_BULK_PIN(MSC1_CMD),
+	JZ_GPIO_BULK_PIN(MSC1_CLK),
+	JZ_GPIO_BULK_PIN(MSC1_DATA0),
+};
+
+static struct jz4740_mmc_platform_data xz0032_mmc1_pdata = {
+	.gpio_card_detect	= JZ_GPIO_PORTC(20),
+	.gpio_read_only		= -1,
+	.gpio_power		= -1,
+
+	.card_detect_active_low	= 1,
+
+	.data_1bit		= 1,
+
+	.mmc_pins 		= xz0032_mmc1_pins,
+	.mmc_pin_count		= ARRAY_SIZE(xz0032_mmc1_pins),
+
+	.clock_id		= "mmc1",
 };
 
 /* LCD */
@@ -252,6 +276,7 @@ static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_i2c_device,
 #endif
 	&jz4750_adc_device,
+	&jz4750_mmc1_device,
 	&xz0032_charger_device,
 	&xz0032_pwm_backlight_device,
 	&xz0032_gpio_keys_device,
@@ -262,6 +287,7 @@ static int __init xz0032_init_platform_devices(void)
 	jz4750_nand_device.dev.platform_data = &xz0032_nand_pdata;
 	jz4750_framebuffer_device.dev.platform_data = &xz0032_fb_pdata;
 	jz4750_adc_device.dev.platform_data = &xz0032_battery_pdata;
+	jz4750_mmc1_device.dev.platform_data = &xz0032_mmc1_pdata;
 
 #ifdef CONFIG_KEYBOARD_JZ47XX_ADC
 	jz47xx_adc_keys_set_config(&xz0032_adc_keys_pdata);

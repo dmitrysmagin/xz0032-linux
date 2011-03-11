@@ -85,8 +85,8 @@ struct platform_device jz4740_udc_device = {
 /* MMC/SD controller */
 static struct resource jz4740_mmc_resources[] = {
 	{
-		.start	= JZ47XX_MSC_BASE_ADDR,
-		.end	= JZ47XX_MSC_BASE_ADDR + 0x1000 - 1,
+		.start	= JZ47XX_MSC0_BASE_ADDR,
+		.end	= JZ47XX_MSC0_BASE_ADDR + 0x1000 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	{

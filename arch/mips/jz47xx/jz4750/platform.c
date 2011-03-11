@@ -85,6 +85,56 @@ struct platform_device jz4750_nand_device = {
 	.resource = jz4750_nand_resources,
 };
 
+/* MMC/SD controllers */
+static struct resource jz4750_mmc0_resources[] = {
+	{
+		.start	= JZ47XX_MSC0_BASE_ADDR,
+		.end	= JZ47XX_MSC0_BASE_ADDR + 0x1000 - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= JZ4750_IRQ_MSC0,
+		.end	= JZ4750_IRQ_MSC0,
+		.flags	= IORESOURCE_IRQ,
+	}
+};
+
+struct platform_device jz4750_mmc0_device = {
+	.name		= "jz4740-mmc",
+	.id		= 0,
+	.dev = {
+		.dma_mask = &jz4750_mmc0_device.dev.coherent_dma_mask,
+		.coherent_dma_mask = DMA_BIT_MASK(32),
+	},
+	.num_resources  = ARRAY_SIZE(jz4750_mmc0_resources),
+	.resource	= jz4750_mmc0_resources,
+};
+
+static struct resource jz4750_mmc1_resources[] = {
+	{
+		.start	= JZ47XX_MSC1_BASE_ADDR,
+		.end	= JZ47XX_MSC1_BASE_ADDR + 0x1000 - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= JZ4750_IRQ_MSC1,
+		.end	= JZ4750_IRQ_MSC1,
+		.flags	= IORESOURCE_IRQ,
+	}
+};
+
+struct platform_device jz4750_mmc1_device = {
+	.name		= "jz4740-mmc",
+	.id		= 1,
+	.dev = {
+		.dma_mask = &jz4750_mmc1_device.dev.coherent_dma_mask,
+		.coherent_dma_mask = DMA_BIT_MASK(32),
+	},
+	.num_resources  = ARRAY_SIZE(jz4750_mmc1_resources),
+	.resource	= jz4750_mmc1_resources,
+};
+
+
 /* LCD controller */
 static struct resource jz4750_framebuffer_resources[] = {
 	{
