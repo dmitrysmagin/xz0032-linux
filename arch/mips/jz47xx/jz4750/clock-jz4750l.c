@@ -864,6 +864,9 @@ static int jz4750_clock_init(void)
 
 	jz_clk_reg_set_bits(JZ_REG_CLOCK_CTRL, JZ_CLOCK_CHANGE_ENABLE);
 
+	/* Gate everything except RTC, TCU and UART0. */
+	jz_clk_reg_set_bits(JZ_REG_CLOCK_GATE, 0xfff8);
+
 	val = jz_clk_reg_read(JZ_REG_CLOCK_SPI);
 
 	if (val & JZ_CLOCK_SPI_SRC_PLL)
