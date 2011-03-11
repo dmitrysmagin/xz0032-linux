@@ -1,6 +1,8 @@
 #ifndef __LINUX_MMC_JZ4740_MMC
 #define __LINUX_MMC_JZ4740_MMC
 
+#include <asm/mach-jz47xx/gpio.h>
+
 struct jz4740_mmc_platform_data {
 	int gpio_power;
 	int gpio_card_detect;
@@ -10,6 +12,11 @@ struct jz4740_mmc_platform_data {
 	unsigned power_active_low:1;
 
 	unsigned data_1bit:1;
+
+	unsigned mmc_pin_count;
+	struct jz_gpio_bulk_request *mmc_pins;
+
+	const char* clock_id;
 };
 
 #endif

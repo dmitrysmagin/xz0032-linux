@@ -26,11 +26,11 @@
 
 #include <linux/bitops.h>
 #include <linux/gpio.h>
-#include <asm/mach-jz4740/gpio.h>
+#include <gpio.h>
 #include <asm/cacheflush.h>
 #include <linux/dma-mapping.h>
 
-#include <asm/mach-jz4740/jz4740_mmc.h>
+#include <jz4740_mmc.h>
 
 #define JZ_REG_MMC_STRPCL	0x00
 #define JZ_REG_MMC_STATUS	0x04
@@ -693,15 +693,6 @@ static const struct mmc_host_ops jz4740_mmc_ops = {
 	.enable_sdio_irq = jz4740_mmc_enable_sdio_irq,
 };
 
-static const struct jz_gpio_bulk_request jz4740_mmc_pins[] = {
-	JZ_GPIO_BULK_PIN(MSC_CMD),
-	JZ_GPIO_BULK_PIN(MSC_CLK),
-	JZ_GPIO_BULK_PIN(MSC_DATA0),
-	JZ_GPIO_BULK_PIN(MSC_DATA1),
-	JZ_GPIO_BULK_PIN(MSC_DATA2),
-	JZ_GPIO_BULK_PIN(MSC_DATA3),
-};
-
 static int __devinit jz4740_mmc_request_gpio(struct device *dev, int gpio,
 	const char *name, bool output, int value)
 {
@@ -743,7 +734,7 @@ static int __devinit jz4740_mmc_request_gpios(struct platform_device *pdev)
 		goto err_free_gpio_card_detect;
 
 	ret = jz4740_mmc_request_gpio(&pdev->dev, pdata->gpio_power,
-			"MMC read only", true, pdata->power_active_low);
+			"MMC power", true, pdata->power_active_low);
 	if (ret)
 		goto err_free_gpio_read_only;
 
@@ -793,15 +784,6 @@ static void jz4740_mmc_free_gpios(struct platform_device *pdev)
 		gpio_free(pdata->gpio_card_detect);
 }
 
-static inline size_t jz4740_mmc_num_pins(struct jz4740_mmc_host *host)
-{
-	size_t num_pins = ARRAY_SIZE(jz4740_mmc_pins);
-	if (host->pdata && host->pdata->data_1bit)
-		num_pins -= 3;
-
-	return num_pins;
-}
-
 static int __devinit jz4740_mmc_probe(struct platform_device* pdev)
 {
 	int ret;
@@ -827,10 +809,10 @@ static int __devinit jz4740_mmc_probe(struct platform_device* pdev)
 		goto err_free_host;
 	}
 
-	host->clk = clk_get(&pdev->dev, "mmc");
+	host->clk = clk_get(&pdev->dev, pdata->clock_id);
 	if (IS_ERR(host->clk)) {
 		ret = PTR_ERR(host->clk);
-		dev_err(&pdev->dev, "Failed to get mmc clock\n");
+		dev_err(&pdev->dev, "Failed to get mmc clock: %d\n", ret);
 		goto err_free_host;
 	}
 
@@ -856,7 +838,7 @@ static int __devinit jz4740_mmc_probe(struct platform_device* pdev)
 		goto err_release_mem_region;
 	}
 
-	ret = jz_gpio_bulk_request(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+	ret = jz_gpio_bulk_request(pdata->mmc_pins, pdata->mmc_pin_count);
 	if (ret) {
 		dev_err(&pdev->dev, "Failed to request mmc pins: %d\n", ret);
 		goto err_iounmap;
@@ -924,7 +906,7 @@ err_free_card_detect_irq:
 err_free_gpios:
 	jz4740_mmc_free_gpios(pdev);
 err_gpio_bulk_free:
-	jz_gpio_bulk_free(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+	jz_gpio_bulk_free(pdata->mmc_pins, pdata->mmc_pin_count);
 err_iounmap:
 	iounmap(host->base);
 err_release_mem_region:
@@ -941,6 +923,7 @@ err_free_host:
 static int __devexit jz4740_mmc_remove(struct platform_device *pdev)
 {
 	struct jz4740_mmc_host *host = platform_get_drvdata(pdev);
+	struct jz4740_mmc_platform_data *pdata = pdev->dev.platform_data;
 
 	del_timer_sync(&host->timeout_timer);
 	jz4740_mmc_set_irq_enabled(host, 0xff, false);
@@ -953,7 +936,7 @@ static int __devexit jz4740_mmc_remove(struct platform_device *pdev)
 		free_irq(host->card_detect_irq, host);
 
 	jz4740_mmc_free_gpios(pdev);
-	jz_gpio_bulk_free(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+	jz_gpio_bulk_free(pdata->mmc_pins, pdata->mmc_pin_count);
 
 	iounmap(host->base);
 	release_mem_region(host->mem->start, resource_size(host->mem));
@@ -971,10 +954,11 @@ static int __devexit jz4740_mmc_remove(struct platform_device *pdev)
 static int jz4740_mmc_suspend(struct device *dev)
 {
 	struct jz4740_mmc_host *host = dev_get_drvdata(dev);
+	struct jz4740_mmc_platform_data *pdata = host->pdata;
 
 	mmc_suspend_host(host->mmc);
 
-	jz_gpio_bulk_suspend(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+	jz_gpio_bulk_suspend(pdata->mmc_pins, pdata->mmc_pin_count);
 
 	return 0;
 }
@@ -982,8 +966,9 @@ static int jz4740_mmc_suspend(struct device *dev)
 static int jz4740_mmc_resume(struct device *dev)
 {
 	struct jz4740_mmc_host *host = dev_get_drvdata(dev);
+	struct jz4740_mmc_platform_data *pdata = host->pdata;
 
-	jz_gpio_bulk_resume(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+	jz_gpio_bulk_resume(pdata->mmc_pins, pdata->mmc_pin_count);
 
 	mmc_resume_host(host->mmc);
 
