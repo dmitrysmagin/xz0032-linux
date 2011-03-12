@@ -170,7 +170,7 @@ static struct platform_pwm_backlight_data xz0032_backlight_data = {
 	.pwm_id         = 5,
 	.max_brightness = 100,
 	.dft_brightness = 100,
-	.pwm_period_ns  = 10000,
+	.pwm_period_ns  = 10000000,
 };
 
 static struct platform_device xz0032_pwm_backlight_device = {
