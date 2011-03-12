@@ -69,6 +69,7 @@ struct pwm_device *pwm_request(int id, const char *label)
 	}
 
 	jz_gpio_set_function(pwm->gpio, JZ_GPIO_FUNC_PWM);
+	gpio_direction_output(pwm->gpio, 1);
 
 	jz4740_timer_start(id);
 
@@ -80,6 +81,7 @@ void pwm_free(struct pwm_device *pwm)
 	pwm_disable(pwm);
 	jz4740_timer_set_ctrl(pwm->id, 0);
 
+	gpio_direction_input(pwm->gpio);
 	jz_gpio_set_function(pwm->gpio, JZ_GPIO_FUNC_NONE);
 	gpio_free(pwm->gpio);
 
