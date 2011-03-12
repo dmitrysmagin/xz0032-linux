@@ -62,6 +62,9 @@ struct jz4740_fb_platform_data {
 
 	unsigned pixclk_falling_edge:1;
 	unsigned date_enable_active_low:1;
+
+	int gpio_reset;
+	unsigned reset_active_low;
 };
 
 #endif
