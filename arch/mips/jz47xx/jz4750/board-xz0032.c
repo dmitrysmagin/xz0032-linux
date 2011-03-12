@@ -131,6 +131,9 @@ static struct jz4740_fb_platform_data xz0032_fb_pdata = {
 	.bpp            = 16,
 	.lcd_type       = JZ_LCD_TYPE_GENERIC_16_BIT,
 	.pixclk_falling_edge = 1,
+
+	.gpio_reset	= JZ_GPIO_PORTD(24),
+	.reset_active_low = 1,
 };
 
 /* Battery */

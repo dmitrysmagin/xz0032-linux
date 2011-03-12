@@ -537,6 +537,9 @@ static int jzfb_blank(int blank_mode, struct fb_info *info)
 		jzfb_enable(jzfb);
 		jzfb->is_enabled = 1;
 
+		if(gpio_is_valid(jzfb->pdata->gpio_reset))
+			gpio_set_value(jzfb->pdata->gpio_reset, jzfb->pdata->reset_active_low);
+
 		mutex_unlock(&jzfb->lock);
 		break;
 	default:
@@ -545,6 +548,9 @@ static int jzfb_blank(int blank_mode, struct fb_info *info)
 			mutex_unlock(&jzfb->lock);
 			return 0;
 		}
+
+		if(gpio_is_valid(jzfb->pdata->gpio_reset))
+			gpio_set_value(jzfb->pdata->gpio_reset, !jzfb->pdata->reset_active_low);
 
 		jzfb_disable(jzfb);
 		jzfb->is_enabled = 0;
@@ -690,6 +696,17 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
 		goto err_put_lpclk;
 	}
 
+	if (gpio_is_valid(pdata->gpio_reset)) {
+		ret = gpio_request(pdata->gpio_reset, "LCD reset");
+		if (ret) {
+			dev_err(&pdev->dev, "Failed to request LCD reset gpio: %d\n", ret);
+			goto err_iounmap;
+		}
+
+		/* Reset is initially inactive */
+		gpio_direction_output(pdata->gpio_reset, pdata->reset_active_low);
+	}
+
 	platform_set_drvdata(pdev, jzfb);
 
 	mutex_init(&jzfb->lock);
@@ -703,7 +720,7 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
 	ret = jzfb_alloc_devmem(jzfb);
 	if (ret) {
 		dev_err(&pdev->dev, "Failed to allocate video memory\n");
-		goto err_iounmap;
+		goto err_gpio_free;
 	}
 
 	fb->fix = jzfb_fix;
@@ -746,6 +763,9 @@ err_free_devmem:
 	jzfb_free_devmem(jzfb);
 err_iounmap:
 	iounmap(jzfb->base);
+err_gpio_free:
+	if(gpio_is_valid(pdata->gpio_reset))
+		gpio_free(pdata->gpio_reset);
 err_put_lpclk:
 	if(jzfb->lpclk != NULL)
 		clk_put(jzfb->lpclk);
@@ -766,6 +786,9 @@ static int __devexit jzfb_remove(struct platform_device *pdev)
 
 	jz_gpio_bulk_free(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
 	jz_gpio_bulk_free(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
+
+	if(gpio_is_valid(jzfb->pdata->gpio_reset))
+		gpio_free(jzfb->pdata->gpio_reset);
 
 	iounmap(jzfb->base);
 	release_mem_region(jzfb->mem->start, resource_size(jzfb->mem));
