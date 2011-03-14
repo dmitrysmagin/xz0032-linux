@@ -92,15 +92,21 @@ int jz_gpio_set_function(int gpio, enum jz_gpio_function function)
 		jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_CLEAR);
 	} else {
 		jz_gpio_write_bit(gpio, JZ_REG_GPIO_FUNC_SET);
-		jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_CLEAR);
 		switch (function) {
 		case JZ_GPIO_FUNC1:
 			jz_gpio_write_bit(gpio, JZ_REG_GPIO_SELECT_CLEAR);
+			jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_CLEAR);
 			break;
-		case JZ_GPIO_FUNC3:
-			jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_SET);
-		case JZ_GPIO_FUNC2: /* Falltrough */
+		case JZ_GPIO_FUNC2:
 			jz_gpio_write_bit(gpio, JZ_REG_GPIO_SELECT_SET);
+			jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_CLEAR);
+		case JZ_GPIO_FUNC3:
+			jz_gpio_write_bit(gpio, JZ_REG_GPIO_SELECT_CLEAR);
+			jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_SET);
+			break;
+		case JZ_GPIO_FUNC4:
+			jz_gpio_write_bit(gpio, JZ_REG_GPIO_SELECT_SET);
+			jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_SET);
 			break;
 		default:
 			BUG();
