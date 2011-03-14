@@ -83,8 +83,6 @@ uint32_t jz_gpio_port_get_value(int port, uint32_t mask);
 #define JZ_GPIO_PORTD(x) ((x) + 32 * 3)
 
 struct jz_gpio_chip {
-	unsigned int id;
-
 	unsigned int irq;
 
 	uint32_t wakeup;

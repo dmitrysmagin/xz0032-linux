@@ -290,7 +290,7 @@ static void jz_gpio_irq_demux_handler(unsigned int irq, struct irq_desc *desc)
 
 	jz_gpio_check_trigger_both(chip, irq);
 
-	gpio_irq += (chip->id << 5) + jz_gpio_irq_base;
+	gpio_irq += (chip->sysdev.id << 5) + jz_gpio_irq_base;
 
 	generic_handle_irq(gpio_irq);
 };
@@ -495,10 +495,8 @@ int __init jz47xx_gpio_init(struct jz_gpio_chip *chips, size_t num,
 	jz_gpio_num_chips = num;
 	jz_gpio_irq_base = irq_base;
 
-	for (i = 0; i < num; ++i) {
-		chips[i].id = i;
+	for (i = 0; i < num; ++i)
 		jz47xx_gpio_chip_init(&chips[i], i);
-	}
 
 	printk(KERN_INFO "JZ47XX GPIO initialized\n");
 
