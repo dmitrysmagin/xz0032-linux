@@ -156,8 +156,8 @@ void pwm_disable(struct pwm_device *pwm)
 	uint32_t ctrl = jz4740_timer_get_ctrl(pwm->id);
 
 	ctrl &= ~JZ_TIMER_CTRL_PWM_ENABLE;
-	jz4740_timer_disable(pwm->id);
 	jz4740_timer_set_ctrl(pwm->id, ctrl);
+	jz4740_timer_disable(pwm->id);
 }
 
 int __init jz47xx_pwm_init(struct pwm_device* pwm_list, int pwm_count)
