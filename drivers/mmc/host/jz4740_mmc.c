@@ -528,8 +528,8 @@ static irqreturn_t jz_mmc_irq(int irq, void *devid)
 	struct mmc_command *cmd = host->cmd;
 	uint16_t irq_reg, status, tmp;
 
+	status = readl(host->base + JZ_REG_MMC_STATUS);
 	irq_reg = readw(host->base + JZ_REG_MMC_IREG);
-
 	tmp = irq_reg;
 	irq_reg &= ~host->irq_mask;
 
@@ -548,8 +548,6 @@ static irqreturn_t jz_mmc_irq(int irq, void *devid)
 	if (host->req && cmd && irq_reg) {
 		if (test_and_clear_bit(0, &host->waiting)) {
 			del_timer(&host->timeout_timer);
-
-			status = readl(host->base + JZ_REG_MMC_STATUS);
 
 			if (status & JZ_MMC_STATUS_TIMEOUT_RES) {
 					cmd->error = -ETIMEDOUT;
