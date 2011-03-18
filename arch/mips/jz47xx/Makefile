@@ -5,7 +5,7 @@
 # Object file lists.
 
 obj-y += prom.o irq.o reset.o setup.o \
-	timer.o pwm.o serial.o
+	timer.o pwm.o serial.o clock.o
 
 obj-$(CONFIG_JZ47XX_TIMER_CSRC) += timer-csrc.o
 obj-$(CONFIG_JZ47XX_TIMER_CEVT) += timer-cevt.o

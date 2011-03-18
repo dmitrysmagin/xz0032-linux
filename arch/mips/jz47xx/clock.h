@@ -17,6 +17,7 @@
 #define __MIPS_JZ4740_CLOCK_H__
 
 #include <linux/list.h>
+#include <linux/clkdev.h>
 
 struct jz47xx_clock_board_data {
 	unsigned long ext_rate;
@@ -39,18 +40,16 @@ struct clk_ops {
 	int (*is_enabled)(struct clk *clk);
 
 	int (*set_parent)(struct clk *clk, struct clk *parent);
-
 };
 
 struct clk {
-	const char *name;
 	struct clk *parent;
 
 	uint32_t gate_bit;
 
-	const struct clk_ops *ops;
+	const char *name;
 
-	struct list_head list;
+	const struct clk_ops *ops;
 
 #ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs_entry;
@@ -61,6 +60,23 @@ struct clk {
 
 #define JZ47XX_CLK_NOT_GATED ((uint32_t)-1)
 
+struct main_clk {
+	struct clk clk;
+	uint32_t div_offset;
+};
+
+struct divided_clk {
+	struct clk clk;
+	uint32_t reg;
+	uint32_t mask;
+};
+
+struct static_clk {
+	struct clk clk;
+	unsigned long rate;
+};
+
+void __init jz47xx_clock_add_table(struct clk_lookup *table, size_t num);
 int clk_is_enabled(struct clk *clk);
 
 #ifdef CONFIG_DEBUG_FS

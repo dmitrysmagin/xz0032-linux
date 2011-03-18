@@ -211,6 +211,7 @@ config MACH_JZ47XX
 	select SYS_HAS_EARLY_PRINTK
 	select HAVE_PWM
 	select HAVE_CLK
+	select CLKDEV_LOOKUP
 
 config LASAT
 	bool "LASAT Networks platforms"
