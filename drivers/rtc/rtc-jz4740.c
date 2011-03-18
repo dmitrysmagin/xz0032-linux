@@ -21,12 +21,15 @@
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 
+#include <asm/mach-jz47xx/soc.h>
+
 #define JZ_REG_RTC_CTRL		0x00
 #define JZ_REG_RTC_SEC		0x04
 #define JZ_REG_RTC_SEC_ALARM	0x08
 #define JZ_REG_RTC_REGULATOR	0x0C
 #define JZ_REG_RTC_HIBERNATE	0x20
 #define JZ_REG_RTC_SCRATCHPAD	0x34
+#define JZ_REG_RTC_WRITE_ENABLE	0x3C
 
 #define JZ_RTC_CTRL_WRDY	BIT(7)
 #define JZ_RTC_CTRL_1HZ		BIT(6)
@@ -268,6 +271,14 @@ static int __devinit jz4740_rtc_probe(struct platform_device *pdev)
 	if (ret) {
 		dev_err(&pdev->dev, "Failed to request rtc irq: %d\n", ret);
 		goto err_unregister_rtc;
+	}
+
+	if (soc_is_jz4760()) {
+		ret = jz4740_rtc_reg_write(rtc, JZ_REG_RTC_WRITE_ENABLE, 0xA55A);
+		if (ret) {
+			dev_err(&pdev->dev, "Could not write to RTC registers\n");
+			goto err_free_irq;
+		}
 	}
 
 	scratchpad = jz4740_rtc_reg_read(rtc, JZ_REG_RTC_SCRATCHPAD);
