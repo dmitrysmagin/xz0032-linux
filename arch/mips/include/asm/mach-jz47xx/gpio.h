@@ -25,6 +25,7 @@ enum jz_gpio_function {
     JZ_GPIO_FUNC1,
     JZ_GPIO_FUNC2,
     JZ_GPIO_FUNC3,
+    JZ_GPIO_FUNC4,
 };
 
 /*
@@ -81,6 +82,8 @@ uint32_t jz_gpio_port_get_value(int port, uint32_t mask);
 #define JZ_GPIO_PORTB(x) ((x) + 32 * 1)
 #define JZ_GPIO_PORTC(x) ((x) + 32 * 2)
 #define JZ_GPIO_PORTD(x) ((x) + 32 * 3)
+#define JZ_GPIO_PORTE(x) ((x) + 32 * 4)
+#define JZ_GPIO_PORTF(x) ((x) + 32 * 5)
 
 struct jz_gpio_chip {
 	unsigned int irq;
