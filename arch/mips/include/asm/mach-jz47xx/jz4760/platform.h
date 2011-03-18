@@ -19,6 +19,14 @@
 
 #include <linux/platform_device.h>
 
+extern struct platform_device jz4760_rtc_device;
+extern struct platform_device jz4760_nand_device;
+extern struct platform_device jz4760_usb_ohci_device;
+extern struct platform_device jz4760_mmc0_device;
+extern struct platform_device jz4760_mmc1_device;
+extern struct platform_device jz4760_mmc2_device;
+extern struct platform_device jz4760_framebuffer_device;
+extern struct platform_device jz4760_adc_device;
 void jz4760_serial_device_register(void);
 
 #endif
