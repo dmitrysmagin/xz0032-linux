@@ -100,8 +100,6 @@ static struct jz4740_mmc_platform_data xz0032_mmc1_pdata = {
 
 	.mmc_pins 		= xz0032_mmc1_pins,
 	.mmc_pin_count		= ARRAY_SIZE(xz0032_mmc1_pins),
-
-	.clock_id		= "mmc1",
 };
 
 /* LCD */

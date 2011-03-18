@@ -15,8 +15,6 @@ struct jz4740_mmc_platform_data {
 
 	unsigned mmc_pin_count;
 	struct jz_gpio_bulk_request *mmc_pins;
-
-	const char* clock_id;
 };
 
 #endif
