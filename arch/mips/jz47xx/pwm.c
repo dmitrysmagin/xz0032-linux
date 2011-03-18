@@ -68,7 +68,9 @@ struct pwm_device *pwm_request(int id, const char *label)
 		return ERR_PTR(ret);
 	}
 
-	jz_gpio_set_function(pwm->gpio, JZ_GPIO_FUNC_PWM);
+	/* All JZ47XX SoCs use FUNC1 for their PWM pins, if this changes the
+	 * function type has to be added to the pwm_device. */
+	jz_gpio_set_function(pwm->gpio, JZ_GPIO_FUNC1);
 	gpio_direction_output(pwm->gpio, 1);
 
 	jz4740_timer_start(id);
