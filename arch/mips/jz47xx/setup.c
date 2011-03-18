@@ -22,6 +22,16 @@
 
 void __init plat_mem_setup(void)
 {
+	if (soc_is_jz4760()) {
+		/* Found in the original Ingenic Linux SDK, without it accessing
+		 * vmalloc'ed memory hardlocks the CPU */
+		__asm__ (
+			"li    $2, 0xa9000000 \n\t"
+			"mtc0  $2, $5, 4      \n\t"
+			"nop                  \n\t"
+			::"r"(2));
+	}
+
 	jz4740_reset_init();
 }
 
