@@ -13,6 +13,6 @@ static struct pwm_device jz4740_pwm_list[] = {
 
 static int __init jz4740_pwm_init(void)
 {
-	return jz47xx_pwm_init(jz4750_pwm_list, ARRAY_SIZE(jz4750_pwm_list));
+	return jz47xx_pwm_init(jz4740_pwm_list, ARRAY_SIZE(jz4740_pwm_list));
 }
 subsys_initcall(jz4740_pwm_init);
