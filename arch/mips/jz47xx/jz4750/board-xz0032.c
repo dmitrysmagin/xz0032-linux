@@ -157,8 +157,8 @@ static struct gpio_charger_platform_data xz0032_charger_pdata = {
 	.type = POWER_SUPPLY_TYPE_USB,
 	.gpio = JZ_GPIO_PORTD(16),
 	.gpio_active_low = 0,
-	.batteries = xz0032_batteries,
-	.num_batteries = ARRAY_SIZE(xz0032_batteries),
+	.supplied_to = xz0032_batteries,
+	.num_supplicants = ARRAY_SIZE(xz0032_batteries),
 };
 
 static struct platform_device xz0032_charger_device = {
@@ -236,6 +236,7 @@ static struct platform_device xz0032_gpio_keys_device = {
 };
 
 /* ADC buttons */
+#if 0
 static struct jz_adc_button xz0032_adc_keys[] = {
 	{
 		.code      = KEY_C,
@@ -269,6 +270,7 @@ static struct jz_adc_keys_platform_data xz0032_adc_keys_pdata = {
 	.rep      = 1,
 	.poll_interval = 50,
 };
+#endif
 
 static struct platform_device *jz_platform_devices[] __initdata = {
 	&jz4750_rtc_device,
