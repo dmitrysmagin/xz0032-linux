@@ -49,7 +49,7 @@
 
 #define JZ4740_IRQ_ADC_BASE	JZ47XX_IRQ(176)
 
-#define NR_IRQS			182
+#define NR_IRQS			JZ47XX_IRQ(182)
 
 
 #endif
