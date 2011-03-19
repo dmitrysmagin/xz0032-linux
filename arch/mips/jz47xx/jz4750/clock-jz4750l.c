@@ -701,7 +701,7 @@ static struct clk_lookup jz4750_clk_table[] = {
 	INIT_CLOCK(NULL, "hclk", &jz_clk_high_speed_peripheral.clk),
 	INIT_CLOCK(NULL, "pclk", &jz_clk_low_speed_peripheral.clk),
 
-	INIT_CLOCK("jz4750-nand", "bch", &jz4750_clk_bch),
+	INIT_CLOCK("jz4750-nand.0", "bch", &jz4750_clk_bch),
 
 	INIT_CLOCK("jz4740-rtc", "rtc", &jz4750_clk_rtc.clk),
 	INIT_CLOCK("jz4740-fb", "lcd", &jz4750_clk_lcd.clk),
