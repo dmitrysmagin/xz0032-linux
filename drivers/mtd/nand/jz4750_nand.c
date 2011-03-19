@@ -327,7 +327,7 @@ static int __devinit jz_nand_probe(struct platform_device *pdev)
 		}
 	}
 
-	nand->clk_bch = clk_get(NULL, "bch");
+	nand->clk_bch = clk_get(&pdev->dev, "bch");
 	if(IS_ERR(nand->clk_bch)) {
 		ret = PTR_ERR(nand->clk_bch);
 		dev_err(&pdev->dev, "Failed to request BCH clock: %d\n",
