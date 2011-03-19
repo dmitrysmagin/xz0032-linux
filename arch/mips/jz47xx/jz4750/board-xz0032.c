@@ -234,7 +234,7 @@ static struct platform_device xz0032_gpio_keys_device = {
 };
 
 /* ADC buttons */
-#if 0
+#ifdef CONFIG_KEYBOARD_JZ47XX_ADC
 static struct jz_adc_button xz0032_adc_keys[] = {
 	{
 		.code      = KEY_C,
