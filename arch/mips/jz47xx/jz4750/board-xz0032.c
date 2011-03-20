@@ -278,6 +278,9 @@ static struct platform_device *jz_platform_devices[] __initdata = {
 #ifndef CONFIG_JZ4750L_XZ0032_I2C_GPIO_AS_KEYS
 	&jz4750_i2c_device,
 #endif
+	&jz4750_i2s_device,
+	&jz4750_pcm_device,
+	&jz4750_codec_device,
 	&jz4750_adc_device,
 	&jz4750_mmc1_device,
 	&xz0032_charger_device,

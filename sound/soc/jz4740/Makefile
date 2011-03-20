@@ -12,6 +12,10 @@ snd-soc-qi-lb60-objs := qi_lb60.o
 snd-soc-n516-objs := n516.o
 snd-soc-n526-objs := n526.o
 
+# Jz4750L Machine Support
+snd-soc-xz0032-objs := xz0032.o
+
 obj-$(CONFIG_SND_JZ4740_SOC_QI_LB60) += snd-soc-qi-lb60.o
 obj-$(CONFIG_SND_JZ4740_SOC_N516) += snd-soc-n516.o
 obj-$(CONFIG_SND_JZ4740_SOC_N526) += snd-soc-n526.o
+obj-$(CONFIG_SND_JZ4750L_SOC_XZ0032) += snd-soc-xz0032.o

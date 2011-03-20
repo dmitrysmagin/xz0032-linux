@@ -34,6 +34,14 @@ config SND_JZ4740_SOC_N526
 	tristate "SoC Audio support for Hanvon N526 eBook reader"
 	depends on SND_JZ4740_SOC && JZ4740_N526
 	select SND_JZ4740_SOC_I2S
-    select SND_SOC_JZCODEC
+	select SND_SOC_JZCODEC
 	help
 	  Say Y if you want to enable support for SoC audio on the Hanvon N526.
+
+config SND_JZ4750L_SOC_XZ0032
+	tristate "SoC Audio support for XZ0032"
+	depends on SND_JZ4740_SOC && JZ4750L_XZ0032
+	select SND_JZ4740_SOC_I2S
+	select SND_SOC_JZ4750_CODEC
+	help
+	  Say Y if you want to add support for ASoC audio on the XZ0032 board.
