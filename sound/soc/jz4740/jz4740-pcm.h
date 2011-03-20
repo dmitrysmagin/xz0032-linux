@@ -9,8 +9,7 @@
 #define _JZ4740_PCM_H
 
 #include <linux/dma-mapping.h>
-#include <asm/mach-jz4740/dma.h>
-
+#include <dma.h>
 
 struct jz4740_pcm_config {
 	struct jz4740_dma_config dma_config;

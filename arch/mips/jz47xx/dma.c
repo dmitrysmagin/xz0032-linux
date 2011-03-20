@@ -20,8 +20,8 @@
 
 #include <linux/dma-mapping.h>
 
-#include <jz4740/dma.h>
-#include <jz4740/irq.h>
+#include <dma.h>
+#include <irq.h>
 
 #include <asm/mach-jz47xx/base.h>
 
@@ -282,7 +282,7 @@ static int jz4740_dma_init(void)
 
 	spin_lock_init(&jz4740_dma_lock);
 
-	ret = request_irq(JZ4740_IRQ_DMAC, jz4740_dma_irq, 0, "DMA", NULL);
+	ret = request_irq(JZ4750_IRQ_DMA0, jz4740_dma_irq, 0, "DMA", NULL);
 
 	if (ret)
 		printk(KERN_ERR "JZ4740 DMA: Failed to request irq: %d\n", ret);

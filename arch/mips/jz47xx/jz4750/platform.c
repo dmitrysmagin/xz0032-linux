@@ -155,6 +155,44 @@ struct platform_device jz4750_framebuffer_device = {
 	},
 };
 
+/* I2S controller */
+static struct resource jz4750_i2s_resources[] = {
+	{
+		.start	= JZ47XX_AIC_BASE_ADDR,
+		.end	= JZ47XX_AIC_BASE_ADDR + 0x38 - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+};
+
+struct platform_device jz4750_i2s_device = {
+	.name		= "jz4740-i2s",
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(jz4750_i2s_resources),
+	.resource	= jz4750_i2s_resources,
+};
+
+/* PCM */
+struct platform_device jz4750_pcm_device = {
+	.name		= "jz4740-pcm-audio",
+	.id		= -1,
+};
+
+/* Codec */
+static struct resource jz4750_codec_resources[] = {
+	{
+		.start	= JZ47XX_AIC_BASE_ADDR + 0xA4,
+		.end	= JZ47XX_AIC_BASE_ADDR + 0xAC - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+};
+
+struct platform_device jz4750_codec_device = {
+	.name		= "jz4750-codec",
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(jz4750_codec_resources),
+	.resource	= jz4750_codec_resources,
+};
+
 /* RTC controller */
 static struct resource jz4750_rtc_resources[] = {
 	{

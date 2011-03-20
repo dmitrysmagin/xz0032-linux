@@ -26,7 +26,7 @@
 #include <sound/pcm_params.h>
 #include <sound/soc.h>
 
-#include <asm/mach-jz4740/dma.h>
+#include <dma.h>
 #include "jz4740-pcm.h"
 
 struct jz4740_runtime_data {

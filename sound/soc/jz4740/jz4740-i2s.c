@@ -201,6 +201,7 @@ static int jz4740_i2s_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
 		conf |= JZ_AIC_CONF_BIT_CLK_MASTER;
 		break;
 	case SND_SOC_DAIFMT_CBM_CFM:
+		format |= JZ_AIC_I2S_FMT_ENABLE_SYS_CLK; // dirty 4750 hack
 		break;
 	default:
 		return -EINVAL;
