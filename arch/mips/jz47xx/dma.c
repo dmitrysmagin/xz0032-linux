@@ -37,6 +37,7 @@
 #define JZ_REG_DMA_IRQ			0x304
 #define JZ_REG_DMA_DOORBELL		0x308
 #define JZ_REG_DMA_DOORBELL_SET		0x30C
+#define JZ_REG_DMA_CLOCK_ENABLE		0x310
 
 #define JZ_DMA_STATUS_CTRL_NO_DESC		BIT(31)
 #define JZ_DMA_STATUS_CTRL_DESC_INV		BIT(6)
@@ -225,6 +226,9 @@ void jz4740_dma_enable(struct jz4740_dma_chan *dma)
 	jz4740_dma_write_mask(JZ_REG_DMA_CTRL,
 			JZ_DMA_CTRL_ENABLE,
 			JZ_DMA_CTRL_HALT | JZ_DMA_CTRL_ENABLE);
+
+	jz4740_dma_write_mask(JZ_REG_DMA_CLOCK_ENABLE,
+			BIT(dma->id), BIT(dma->id));
 }
 EXPORT_SYMBOL_GPL(jz4740_dma_enable);
 
