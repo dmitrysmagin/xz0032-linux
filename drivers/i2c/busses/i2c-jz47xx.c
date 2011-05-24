@@ -52,15 +52,12 @@ static inline void jz47xx_i2c_set_ctrl(struct jz47xx_i2c *jz47xx_i2c,
 	ctrl = readb(jz47xx_i2c->base + JZ47XX_REG_I2C_CTRL);
 	ctrl &= ~mask;
 	ctrl |= value;
-	printk("ctrl: %x\n", ctrl);
 	writeb(ctrl, jz47xx_i2c->base + JZ47XX_REG_I2C_CTRL);
 }
 
 static irqreturn_t jz47xx_i2c_irq_handler(int irq, void *devid)
 {
 	struct jz47xx_i2c *jz47xx_i2c = devid;
-
-	printk("IRQ\n");
 
 	wake_up(&jz47xx_i2c->wait_queue);
 
@@ -85,12 +82,7 @@ static int jz47xx_i2c_test_event(struct jz47xx_i2c *jz47xx_i2c, uint8_t mask, ui
 {
 	uint8_t status;
 
-	mask |= JZ47XX_I2C_STATUS_NACK;
-	value |= JZ47XX_I2C_STATUS_NACK;
-
 	status = readb(jz47xx_i2c->base + JZ47XX_REG_I2C_STATUS);
-	printk("status: %x %x %x %x\n", status, mask, value, (status & mask) ^
-	value);
 	if (((status & mask) ^ value) == mask) {
 		jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_IRQ_ENABLE,
 			JZ47XX_I2C_CTRL_IRQ_ENABLE);
@@ -99,20 +91,13 @@ static int jz47xx_i2c_test_event(struct jz47xx_i2c *jz47xx_i2c, uint8_t mask, ui
 	return 1;
 }
 
-static int jz47xx_i2c_wait_event_or_nack(struct jz47xx_i2c *jz47xx_i2c, uint8_t
-mask, uint8_t value)
+static int jz47xx_i2c_wait_event_or_nack(struct jz47xx_i2c *jz47xx_i2c, uint8_t mask,
+	uint8_t value)
 {
 	int ret;
 
 	ret = wait_event_interruptible_timeout(jz47xx_i2c->wait_queue,
 		jz47xx_i2c_test_event(jz47xx_i2c, mask, value), 30 * HZ);
-
-/*	while (!jz47xx_i2c_test_event(jz47xx_i2c, mask, value));
-
-	ret = 1;*/
-
-	printk("wait event or nack: %d %x\n", ret, readb(jz47xx_i2c->base +
-	JZ47XX_REG_I2C_STATUS));
 
 	if (ret == 0)
 		ret = -ETIMEDOUT;
@@ -126,12 +111,12 @@ mask, uint8_t value)
 	return ret;
 }
 
-static int jz47xx_i2c_wait_event(struct jz47xx_i2c *jz47xx_i2c, uint8_t event)
+static int jz47xx_i2c_wait_event(struct jz47xx_i2c *jz47xx_i2c, uint8_t mask, uint8_t value)
 {
 	int ret;
 
 	ret = wait_event_interruptible_timeout(jz47xx_i2c->wait_queue,
-		jz47xx_i2c_test_event(jz47xx_i2c, event, event), 30 * HZ);
+		jz47xx_i2c_test_event(jz47xx_i2c, mask, value), 30 * HZ);
 
 	if (ret == 0)
 		ret = -ETIMEDOUT;
@@ -145,118 +130,139 @@ static int jz47xx_i2c_wait_event(struct jz47xx_i2c *jz47xx_i2c, uint8_t event)
 static int jz47xx_i2c_write_msg(struct jz47xx_i2c *jz47xx_i2c,
 	struct i2c_msg *msg)
 {
+	uint8_t addr;
 	int ret;
 	int i;
 
-	printk("%s:%s[%d]\n", __FILE__, __func__, __LINE__);
+	addr = msg->addr << 1;
+
+	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_START |
+		JZ47XX_I2C_CTRL_NACK, JZ47XX_I2C_CTRL_START);
+	writeb(addr, jz47xx_i2c->base + JZ47XX_REG_I2C_DATA);
+	jz47xx_i2c_set_data_valid(jz47xx_i2c, true);
+	/* Wait for slave address is started to transfer. */
+	ret = jz47xx_i2c_wait_event_or_nack(jz47xx_i2c,
+		JZ47XX_I2C_STATUS_DATA_VALID, 0);
+	if (ret)
+		goto write_msg_err;
+	//printk("%s:%s[%d]\n", __FILE__, __func__, __LINE__);
 	for (i = 0; i < msg->len; ++i) {
 		writeb(msg->buf[i], jz47xx_i2c->base + JZ47XX_REG_I2C_DATA);
 		jz47xx_i2c_set_data_valid(jz47xx_i2c, true);
 		ret = jz47xx_i2c_wait_event_or_nack(jz47xx_i2c,
 			JZ47XX_I2C_STATUS_DATA_VALID, 0);
 		if (ret)
-			break;
+			goto write_msg_err;
 	}
+	ret = jz47xx_i2c_wait_event(jz47xx_i2c, JZ47XX_I2C_STATUS_TEND,
+		JZ47XX_I2C_STATUS_TEND);
 	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_STOP,
 		JZ47XX_I2C_CTRL_STOP);
-
 	if (!ret)
-		ret = jz47xx_i2c_wait_event_or_nack(jz47xx_i2c, JZ47XX_I2C_STATUS_TEND,
-			JZ47XX_I2C_STATUS_TEND);
-
+		ret = msg->len;
+	else
+		ret = 0;
+	
 	return ret;
+
+write_msg_err:
+	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_STOP,
+		JZ47XX_I2C_CTRL_STOP);
+//	jz47xx_i2c_wait_event(jz47xx_i2c, JZ47XX_I2C_STATUS_TEND,
+//		JZ47XX_I2C_STATUS_TEND);
+	return 0;
 }
 
 static int jz47xx_i2c_read_msg(struct jz47xx_i2c *jz47xx_i2c,
 	struct i2c_msg *msg)
 {
-	int i;
+	uint8_t addr;
 	int ret;
-	printk("%s:%s[%d]\n", __FILE__, __func__, __LINE__);
+	int i;
 
-	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_NACK,
-		msg->len == 1 ? JZ47XX_I2C_CTRL_NACK : 0);
+	addr = (msg->addr << 1) | 1;
+
+	if (1 == msg->len)
+		jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_START | JZ47XX_I2C_CTRL_NACK,
+			JZ47XX_I2C_CTRL_START | JZ47XX_I2C_CTRL_NACK);
+	else
+		jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_START | JZ47XX_I2C_CTRL_NACK,
+			JZ47XX_I2C_CTRL_START);
+	writeb(addr, jz47xx_i2c->base + JZ47XX_REG_I2C_DATA);
+	jz47xx_i2c_set_data_valid(jz47xx_i2c, true);
+	/* Wait for slave address is transfered. */
+	ret = jz47xx_i2c_wait_event_or_nack(jz47xx_i2c, JZ47XX_I2C_STATUS_FIFO_FULL, 0);
+	if (ret)
+		goto read_msg_err;
 
 	for (i = 0; i < msg->len; ++i) {
-		ret = jz47xx_i2c_wait_event(jz47xx_i2c, JZ47XX_I2C_STATUS_DATA_VALID);
-		if (ret) {
-			jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_NACK,
-				JZ47XX_I2C_CTRL_NACK);
-			break;
-		}
+		ret = jz47xx_i2c_wait_event(jz47xx_i2c, JZ47XX_I2C_STATUS_DATA_VALID,
+			JZ47XX_I2C_STATUS_DATA_VALID);
+		if (ret)
+			goto read_msg_err;
 
 		if (i == msg->len - 2) {
 			jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_NACK,
 				JZ47XX_I2C_CTRL_NACK);
 		}
-
 		msg->buf[i] = readb(jz47xx_i2c->base + JZ47XX_REG_I2C_DATA);
-		printk("read: %x\n", msg->buf[i]);
 		jz47xx_i2c_set_data_valid(jz47xx_i2c, false);
+		/* Wait */
+		udelay(10);
 	}
 
+//	ret = jz47xx_i2c_wait_event(jz47xx_i2c, JZ47XX_I2C_STATUS_TEND,
+//		JZ47XX_I2C_STATUS_TEND);
 	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_STOP,
 		JZ47XX_I2C_CTRL_STOP);
+	if (!ret)
+		ret = msg->len;
+	else
+		ret = 0;
 
 	return ret;
+
+read_msg_err:
+	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_STOP,
+		JZ47XX_I2C_CTRL_STOP);
+//	jz47xx_i2c_wait_event(jz47xx_i2c, JZ47XX_I2C_STATUS_TEND,
+//		JZ47XX_I2C_STATUS_TEND);
+	return 0;
 }
 
 static int jz47xx_i2c_xfer_msg(struct jz47xx_i2c *jz47xx_i2c,
 	struct i2c_msg *msg)
 {
-	uint8_t addr;
 	int ret;
-
-	addr = msg->addr << 1;
 	if (msg->flags & I2C_M_RD)
-		addr |= 1;
-
-	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_START,
-		JZ47XX_I2C_CTRL_START);
-	writeb(addr, jz47xx_i2c->base + JZ47XX_REG_I2C_DATA);
-	jz47xx_i2c_set_data_valid(jz47xx_i2c, true);
-
-	if (msg->flags & I2C_M_RD) {
-		printk("%s:%s[%d]\n", __FILE__, __func__, __LINE__);
-		ret = jz47xx_i2c_wait_event_or_nack(jz47xx_i2c,
-		JZ47XX_I2C_STATUS_TEND, JZ47XX_I2C_STATUS_TEND);
-		if (!ret)
-			ret = jz47xx_i2c_read_msg(jz47xx_i2c, msg);
-	} else {
-		printk("%s:%s[%d]\n", __FILE__, __func__, __LINE__);
-		ret = jz47xx_i2c_wait_event_or_nack(jz47xx_i2c,
-		    JZ47XX_I2C_STATUS_DATA_VALID, 0);
-		if (!ret)
-			ret = jz47xx_i2c_write_msg(jz47xx_i2c, msg);
-	}
+		ret = jz47xx_i2c_read_msg(jz47xx_i2c, msg);
+	else
+		ret = jz47xx_i2c_write_msg(jz47xx_i2c, msg);
 
 	return ret;
 }
 
-static int jz47xx_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int
-num)
+static int jz47xx_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
 {
 	struct jz47xx_i2c *jz47xx_i2c = adapter_to_jz47xx_i2c(adap);
 	int ret = 0;
 	int i;
-	int mask = JZ47XX_I2C_CTRL_ENABLE;
-
-	printk("xfer: %d %x\n", num, readb(jz47xx_i2c->base +
-	JZ47XX_REG_I2C_STATUS));
 
 	clk_enable(jz47xx_i2c->clk);
-	jz47xx_i2c_set_ctrl(jz47xx_i2c, mask, mask);
+	udelay(10);			// Wait for clock is stabilized
+	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_ENABLE,
+		JZ47XX_I2C_CTRL_ENABLE);
 
 	for (i = 0; i < num; ++i) {
 		ret = jz47xx_i2c_xfer_msg(jz47xx_i2c, &msgs[i]);
-		if (ret)
+		if (!ret){
+			//printk("I2C transfer error.\n");
 			break;
+		}
 	}
 
-	jz47xx_i2c_set_ctrl(jz47xx_i2c, mask, 0);
+	jz47xx_i2c_set_ctrl(jz47xx_i2c, JZ47XX_I2C_CTRL_ENABLE, 0);
 	clk_disable(jz47xx_i2c->clk);
-
-	printk("xfer ret: %d\n", ret);
 
 	return ret;
 }
@@ -341,13 +347,11 @@ static int __devinit jz47xx_i2c_probe(struct platform_device *pdev)
 		goto err_free;
 	}
 
-    ret = jz_gpio_bulk_request(jz47xx_i2c_pins, ARRAY_SIZE(jz47xx_i2c_pins));
+	ret = jz_gpio_bulk_request(jz47xx_i2c_pins, ARRAY_SIZE(jz47xx_i2c_pins));
 	if (ret) {
 		dev_err(&pdev->dev, "Failed to request i2c pins: %d\n", ret);
 		goto err_free_irq;
 	}
-
-	writew(0x10, jz47xx_i2c->base + JZ47XX_REG_I2C_CLOCK);
 
 	ret = i2c_add_numbered_adapter(&jz47xx_i2c->adapter);
 	if (ret) {
@@ -356,6 +360,12 @@ static int __devinit jz47xx_i2c_probe(struct platform_device *pdev)
 	}
 
 	platform_set_drvdata(pdev, jz47xx_i2c);
+
+	/* Set clock for I2C (100 kHz) */
+	clk_enable(jz47xx_i2c->clk);	// Should be enabled for access to I2C regs
+	udelay(10);			// Wait for clock is stabilized
+	writew(0x8, jz47xx_i2c->base + JZ47XX_REG_I2C_CLOCK);
+	clk_disable(jz47xx_i2c->clk);
 
 	printk("JZ4740 I2C\n");
 
