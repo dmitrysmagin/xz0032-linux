@@ -285,7 +285,7 @@ static void jz_gpio_irq_demux_handler(unsigned int irq, struct irq_desc *desc)
 	uint32_t flag;
 	unsigned int gpio_irq;
 
-	struct jz_gpio_chip *chip = get_irq_desc_data(desc);
+	struct jz_gpio_chip *chip = irq_desc_get_handler_data(desc);
 
 	flag = readl(chip->base + JZ_REG_GPIO_FLAG);
 
@@ -472,16 +472,16 @@ static int __init jz47xx_gpio_chip_init(struct jz_gpio_chip *chip, unsigned int 
 
 	gpiochip_add(&chip->gpio_chip);
 
-	set_irq_data(chip->irq, chip);
-	set_irq_chained_handler(chip->irq, jz_gpio_irq_demux_handler);
+	irq_set_handler_data(chip->irq, chip);
+	irq_set_chained_handler(chip->irq, jz_gpio_irq_demux_handler);
 
 	chip_irq_base = jz_gpio_irq_base + id * 32;
 	chip_irq_end = chip_irq_base + chip->gpio_chip.ngpio;
 
 	for (irq = chip_irq_base; irq < chip_irq_end; ++irq) {
 		lockdep_set_class(&irq_desc[irq].lock, &gpio_lock_class);
-		set_irq_chip_data(irq, chip);
-		set_irq_chip_and_handler(irq, &jz_gpio_irq_chip, handle_level_irq);
+		irq_set_chip_data(irq, chip);
+		irq_set_chip_and_handler(irq, &jz_gpio_irq_chip, handle_level_irq);
 	}
 
 	return 0;
