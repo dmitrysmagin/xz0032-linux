@@ -130,7 +130,7 @@ static int __devinit jz_adc_keys_probe(struct platform_device *pdev)
 	}
 
 	bdev->pdata = jz47xx_adc_keys_config;
-	bdev->cell = pdev->dev.platform_data;
+	bdev->cell = mfd_get_cell(pdev);
 
 	bdev->irq = platform_get_irq(pdev, 0);
 	if (bdev->irq < 0) {
