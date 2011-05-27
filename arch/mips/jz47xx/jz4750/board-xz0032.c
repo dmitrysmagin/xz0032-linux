@@ -283,6 +283,7 @@ static struct platform_device *jz_platform_devices[] __initdata = {
 	&xz0032_charger_device,
 	&xz0032_pwm_backlight_device,
 	&xz0032_gpio_keys_device,
+	&jz4750l_ipu_device
 };
 
 static int __init xz0032_init_platform_devices(void)

@@ -26,6 +26,9 @@ extern struct platform_device jz4750_i2c_device;
 extern struct platform_device jz4750_adc_device;
 extern struct platform_device jz4750_mmc0_device;
 extern struct platform_device jz4750_mmc1_device;
+#ifdef CONFIG_MACH_JZ4750L
+extern struct platform_device jz4750l_ipu_device;
+#endif
 
 void jz4750_serial_device_register(void);
 

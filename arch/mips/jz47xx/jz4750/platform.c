@@ -223,6 +223,29 @@ struct platform_device jz4750_i2c_device = {
 	.resource	= jz4750_i2c_resources,
 };
 
+#ifdef CONFIG_MACH_JZ4750L
+/* IPU */
+static struct resource jz4750l_ipu_resources[] = {
+	{
+		.start	= JZ47XX_IPU_BASE_ADDR,
+		.end	= JZ47XX_IPU_BASE_ADDR + 0xA4 - 1,
+		.flags	= IORESOURCE_MEM,
+	},
+	{
+		.start	= JZ4750_IRQ_IPU,
+		.end	= JZ4750_IRQ_IPU,
+		.flags	= IORESOURCE_IRQ,
+	},
+};
+
+struct platform_device jz4750l_ipu_device = {
+	.name		= "jz4750l-ipu",
+	.id		= -1,
+	.num_resources	= ARRAY_SIZE(jz4750l_ipu_resources),
+	.resource	= jz4750l_ipu_resources,
+};
+#endif
+
 /* Serial */
 #define JZ4750_UART_DATA(_id) \
 	{ \
@@ -257,3 +280,4 @@ void jz4750_serial_device_register(void)
 
 	platform_device_register(&jz4740_uart_device);
 }
+
