@@ -52,6 +52,7 @@
 #define JZ_REG_LCD_CMD1		0x5C
 
 #define JZ_LCD_CFG_SLCD			BIT(31)
+#define JZ_LCD_CFG_NEWDES		BIT(28)
 #define JZ_LCD_CFG_PS_DISABLE		BIT(23)
 #define JZ_LCD_CFG_CLS_DISABLE		BIT(22)
 #define JZ_LCD_CFG_SPL_DISABLE		BIT(21)
@@ -108,11 +109,27 @@
 
 #define JZ_LCD_STATE_DISABLED BIT(0)
 
+#ifdef CONFIG_FB_JZ4740_IPU_SUPPORT
+#define JZ_REG_LCD_XYP0		0x07C
+#define JZ_REG_LCD_SIZE0	0x084
+#define JZ_REG_LCD_OSDC		0x100
+
+#define JZ_LCD_OSDEN	BIT(0)
+#define JZ_LCD_F0EN	BIT(3)
+
+#endif
+
 struct jzfb_framedesc {
 	uint32_t next;
 	uint32_t addr;
 	uint32_t id;
 	uint32_t cmd;
+#ifdef CONFIG_FB_JZ4740_IPU_SUPPORT
+	uint32_t word_offset;
+	uint32_t page_size;
+	uint32_t cmd_num;
+	uint32_t fg_size;
+#endif
 } __packed;
 
 struct jzfb {
@@ -491,6 +508,15 @@ static int jzfb_set_par(struct fb_info *info)
 	else
 		ctrl |= JZ_LCD_CTRL_ENABLE;
 
+#ifdef CONFIG_FB_JZ4740_IPU_SUPPORT
+	jzfb->framedesc->fg_size = (mode->yres << 16) | mode->xres;
+	cfg |= JZ_LCD_CFG_NEWDES;
+
+	writel(JZ_LCD_OSDEN | JZ_LCD_F0EN, jzfb->base + JZ_REG_LCD_OSDC);
+	writel(0, jzfb->base + JZ_REG_LCD_XYP0);
+	writel(jzfb->framedesc->fg_size, jzfb->base + JZ_REG_LCD_SIZE0);
+#endif
+
 	switch (pdata->lcd_type) {
 	case JZ_LCD_TYPE_SPECIAL_TFT_1:
 	case JZ_LCD_TYPE_SPECIAL_TFT_2:
@@ -653,6 +679,12 @@ static int jzfb_alloc_devmem(struct jzfb *jzfb)
 	jzfb->framedesc->cmd = 0;
 	jzfb->framedesc->cmd |= max_videosize / 4;
 
+#ifdef CONFIG_FB_JZ4740_IPU_SUPPORT
+	jzfb->framedesc->word_offset = 0;
+	jzfb->framedesc->page_size = 0;
+	jzfb->framedesc->cmd_num = 0;
+	jzfb->framedesc->fg_size = 0;
+#endif
 	return 0;
 
 err_free_framedesc:

@@ -2321,6 +2321,12 @@ config FB_JZ4740
 	help
 	  Framebuffer support for the JZ4740 SoC.
 
+if FB_JZ4740
+config FB_JZ4740_IPU_SUPPORT
+	bool "JZ4750L IPU overlay support"
+	depends on MACH_JZ4750L
+endif
+
 config FB_MXS
 	tristate "MXS LCD framebuffer support"
 	depends on FB && ARCH_MXS
